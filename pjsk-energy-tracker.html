@@ -436,7 +436,7 @@
     font-weight: 800;
     font-size: 0.85rem;
     margin: 0.5rem auto 0;
-    animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   }
   @keyframes pop-in {
     0% { transform: scale(0.6); opacity: 0; }
@@ -996,7 +996,7 @@
         </select>
       </div>
     </div>
-    <button class="btn" onclick="startTracking()">⚡ Start Tracking</button>
+    <button id="startBtn" class="btn">⚡ Start Tracking</button>
   </div>
 
   <!-- TRACKER CARD -->
@@ -1038,7 +1038,7 @@
       <div class="notif-info">
         Notify when energy reaches <span id="notifyAtDisplay">max</span>
       </div>
-      <button class="toggle-btn" id="notifBtn" onclick="toggleNotif()">Enable</button>
+      <button class="toggle-btn" id="notifBtn" >Enable</button>
     </div>
     <p style="font-size:0.75rem;color:var(--muted);margin-top:0.6rem;font-weight:600;">
       Keep this tab open in the background to receive alerts.
@@ -1057,10 +1057,10 @@
         </div>
       </div>
       <div style="display:flex;align-items:flex-end;">
-        <button class="btn" onclick="updateEnergy()" style="margin-top:0">Update</button>
+        <button id="updateBtn" class="btn" style="margin-top:0">Update</button>
       </div>
       <div class="full-width" style="margin-top:0.6rem;">
-        <button onclick="resetTracker()" style="
+        <button id="startOverBtn" style="
           width:100%;padding:0.6rem;border-radius:12px;
           border:1.5px solid var(--accent1);
           background:transparent;color:var(--accent1);
@@ -1305,11 +1305,13 @@ function updateDisplay() {
   countEl.className = 'count-display' + (isFull ? ' is-full' : '');
   document.getElementById('countSub').textContent = `/ ${max} bonus energy`;
 
-  // Full badge
+  // Full badge - only update if state changed to avoid flicker
   const badge = document.getElementById('fullBadge');
-  badge.innerHTML = isFull
-    ? '<div class="full-badge">✦ FULL — Play a song! ✦</div>'
-    : '';
+  if (isFull && !badge.innerHTML) {
+    badge.innerHTML = '<div class="full-badge">✦ FULL — Play a song! ✦</div>';
+  } else if (!isFull && badge.innerHTML) {
+    badge.innerHTML = '';
+  }
 
   // Progress bar
   const pct = (cur / max) * 100;
@@ -1368,14 +1370,19 @@ function updateDisplay() {
 }
 
 function sendNotif(cur, max) {
+  var msg = cur >= max
+    ? 'Your Bonus Energy is FULL (' + max + '/' + max + ')! Go play a song!'
+    : 'Your Bonus Energy hit ' + cur + '/' + max + '! Time to play!';
+  
+  // Try browser notification
   if (Notification.permission === 'granted') {
-    new Notification('⚡ PJSK Bonus Energy!', {
-      body: cur >= max
-        ? `Your Bonus Energy is FULL (${max}/${max})! Go play a song!`
-        : `Your Bonus Energy hit ${cur}/${max}! Time to play!`,
-      icon: 'https://i.imgur.com/miku16.png'
-    });
+    try {
+      new Notification('⚡ PJSK Bonus Energy!', { body: msg });
+    } catch(e) {}
   }
+  
+  // Always show in-app toast as fallback
+  showToast('⚡ ' + msg);
 }
 
 function toggleNotif() {
@@ -1520,14 +1527,7 @@ async function loadSongs() {
     allDifficulties = await diffsRes.json();
     var tags = await tagsRes.json();
 
-    // Show ALL unique tag values
-    var debugBox = document.getElementById('debugBox');
-    var uniqueTags = {};
-    tags.forEach(function(t) { uniqueTags[t.musicTag] = (uniqueTags[t.musicTag]||0)+1; });
-    if (debugBox) {
-      debugBox.style.display = 'block';
-      debugBox.innerHTML = '<b>All unique tags:</b><br>' + JSON.stringify(uniqueTags);
-    }
+
     
     // Build a map of musicId -> unit from musicTags
     // First pass: assign specific unit tags
@@ -1545,13 +1545,7 @@ async function loadSongs() {
       }
     });
     
-    // Show unit counts in debug box
-    var unitCounts = {};
-    Object.values(musicTagsMap).forEach(function(u) { unitCounts[u] = (unitCounts[u]||0)+1; });
-    if (debugBox) {
-      debugBox.innerHTML += '<br><br><b>Unit counts:</b><br>' + JSON.stringify(unitCounts);
-      debugBox.innerHTML += '<br><br><b>Mapped:</b> ' + Object.keys(musicTagsMap).length + ' songs';
-    }
+
 
     songsLoaded = true;
     renderSongs();
@@ -1589,8 +1583,6 @@ function setUnitFilter(unit) {
 function filterSongs() { renderSongs(); }
 
 function renderSongs() {
-  // Log first song structure for debugging
-  if (allSongs.length > 0) console.log('Song structure:', JSON.stringify(allSongs[0]));
   const query = (document.getElementById('songSearch').value || '').toLowerCase();
   const list = document.getElementById('songList');
   const countEl = document.getElementById('songsCount');
@@ -1616,12 +1608,15 @@ function renderSongs() {
     const unit = getUnitForSong(song);
     const diffs = getDifficultiesForSong(song.id);
     const hasDiff = (name) => diffs.some(d => d.musicDifficulty === name);
-    var coverUrl = song.assetbundleName 
-      ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + song.assetbundleName + '_rip/' + song.assetbundleName + '.png'
-      : '';
+    var ab = song.assetbundleName || '';
+    var coverUrl = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var coverFallback1 = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
+    var coverFallback2 = ab ? 'https://storage.sekai.best/sekai-jp-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
     return `
       <div class="song-card" style="display:flex;gap:0.8rem;align-items:center;">
-        ${coverUrl ? `<img src="${coverUrl}" alt="cover" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--bar-bg);" onerror="this.style.display='none'">` : ''}
+        ${coverUrl ? `<img src="${coverUrl}" alt="cover" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--bar-bg);" 
+            data-fb1="${coverFallback1}" data-fb2="${coverFallback2}"
+            onerror="var fb=this.getAttribute('data-fb1');if(fb&&this.src!==fb){this.src=fb;this.setAttribute('data-fb1','');}else{var fb2=this.getAttribute('data-fb2');if(fb2&&this.src!==fb2){this.src=fb2;}else{this.style.display='none';}}">` : ''}
         <div style="flex:1;min-width:0;">
           <div class="song-title">${song.title || 'Unknown'}</div>
           <div class="song-artist">${song.lyricist || song.composer || '—'}</div>
@@ -1659,6 +1654,19 @@ function runInit() {
   document.querySelectorAll('#unitFilters .filter-chip').forEach(function(el) {
     el.addEventListener('click', function() { setUnitFilter(el.getAttribute('data-unit')); });
   });
+
+  // Buttons by ID
+  var startBtn = document.getElementById('startBtn');
+  if (startBtn) startBtn.addEventListener('click', startTracking);
+
+  var updateBtn = document.getElementById('updateBtn');
+  if (updateBtn) updateBtn.addEventListener('click', updateEnergy);
+
+  var startOverBtn = document.getElementById('startOverBtn');
+  if (startOverBtn) startOverBtn.addEventListener('click', resetTracker);
+
+  var notifBtn = document.getElementById('notifBtn');
+  if (notifBtn) notifBtn.addEventListener('click', toggleNotif);
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', runInit);
@@ -1692,7 +1700,6 @@ if (document.readyState === 'loading') {
       <div class="filter-chip" data-unit="n25">25-ji</div>
     </div>
     <div class="songs-count" id="songsCount"></div>
-    <div id="debugBox" style="background:rgba(0,0,0,0.5);border:1px solid var(--accent1);border-radius:10px;padding:0.8rem;font-size:0.7rem;color:#fff;font-family:monospace;margin-bottom:0.5rem;word-break:break-all;display:none;"></div>
     <div class="song-list" id="songList">
       <div class="loading-songs">Tap to load songs ⚡</div>
     </div>
