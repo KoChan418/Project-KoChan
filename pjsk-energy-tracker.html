@@ -1642,17 +1642,20 @@ const UNIT_EMOJI = {
 
 let musicTagsMap = {}; // musicId -> unit
 
+let allVocals = [];
 async function loadSongs() {
   if (songsLoaded) return;
   document.getElementById('songList').innerHTML = '<div class="loading-songs">Loading songs... ⚡</div>';
   try {
-    const [musicsRes, diffsRes, tagsRes] = await Promise.all([
+    const [musicsRes, diffsRes, tagsRes, vocalsRes] = await Promise.all([
       fetch('https://raw.githubusercontent.com/Sekai-World/sekai-master-db-en-diff/main/musics.json'),
       fetch('https://raw.githubusercontent.com/Sekai-World/sekai-master-db-en-diff/main/musicDifficulties.json'),
-      fetch('https://raw.githubusercontent.com/Sekai-World/sekai-master-db-en-diff/main/musicTags.json')
+      fetch('https://raw.githubusercontent.com/Sekai-World/sekai-master-db-en-diff/main/musicTags.json'),
+      fetch('https://raw.githubusercontent.com/Sekai-World/sekai-master-db-en-diff/main/musicVocals.json')
     ]);
     allSongs = await musicsRes.json();
     allDifficulties = await diffsRes.json();
+    allVocals = await vocalsRes.json();
     var tags = await tagsRes.json();
 
 
@@ -1737,15 +1740,17 @@ function renderSongs() {
     const diffs = getDifficultiesForSong(song.id);
     const hasDiff = (name) => diffs.some(d => d.musicDifficulty === name);
     var ab = song.assetbundleName || '';
-    var coverUrl = ab ? 'https://sekai.best/asset_viewer/music/jacket/' + ab : '';
-    var coverFallback1 = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
-    var coverFallback2 = ab ? 'https://storage.sekai.best/sekai-jp-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
+    var coverUrl = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
+    var coverFallback1 = ab ? 'https://storage.sekai.best/sekai-jp-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
+    var coverFallback2 = '';
     var emoji = UNIT_EMOJI[unit] || '🎶';
     return `
       <div class="song-card" style="display:flex;gap:0.8rem;align-items:center;cursor:pointer;" onclick="openSongModal(${song.id})">
-        ${coverUrl ? `<img src="${coverUrl}" alt="cover" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--bar-bg);" 
+        <div style="width:56px;height:56px;border-radius:10px;flex-shrink:0;background:var(--bar-bg);overflow:hidden;display:flex;align-items:center;justify-content:center;">
+          ${coverUrl ? `<img src="${coverUrl}" alt="cover" style="width:56px;height:56px;object-fit:cover;" 
             data-fb1="${coverFallback1}" data-fb2="${coverFallback2}"
-            onerror="var fb=this.getAttribute('data-fb1');if(fb&&this.src!==fb){this.src=fb;this.setAttribute('data-fb1','');}else{var fb2=this.getAttribute('data-fb2');if(fb2&&this.src!==fb2){this.src=fb2;}else{this.style.display='none';}}">` : ''}
+            onerror="var fb=this.getAttribute('data-fb1');if(fb&&this.src!==fb){this.src=fb;this.setAttribute('data-fb1','');}else{var fb2=this.getAttribute('data-fb2');if(fb2&&this.src!==fb2){this.src=fb2;}else{this.outerHTML='<span style=\'font-size:1.4rem;\'>🎵</span>';}}">`  : '<span style="font-size:1.4rem;">🎵</span>'}
+        </div>
         <div style="flex:1;min-width:0;">
           <div class="song-title">${song.title || 'Unknown'}</div>
           <div class="song-artist">${song.lyricist || song.composer || '—'}</div>
@@ -1804,6 +1809,22 @@ if (document.readyState === 'loading') {
 }
 // Event listeners merged into runInit()
 
+
+// Character name lookup
+const CHAR_NAMES = {
+  1:'Ichika', 2:'Saki', 3:'Honami', 4:'Shiho',
+  5:'Minori', 6:'Haruka', 7:'Airi', 8:'Shizuku',
+  9:'Kohane', 10:'An', 11:'Akito', 12:'Toya',
+  13:'Tsukasa', 14:'Emu', 15:'Nene', 16:'Rui',
+  17:'Kanade', 18:'Mafuyu', 19:'Ena', 20:'Mizuki',
+  21:'Miku', 22:'Rin', 23:'Len', 24:'Luka', 25:'MEIKO', 26:'KAITO'
+};
+function getCharacterName(id, type) {
+  if (type === 'game_character') return CHAR_NAMES[id] || 'Char ' + id;
+  if (type === 'outside_character') return 'Guest';
+  return null;
+}
+
 // Song modal
 function openSongModal(musicId) {
   var song = allSongs.find(function(s) { return s.id === musicId; });
@@ -1811,7 +1832,7 @@ function openSongModal(musicId) {
   
   var unit = getUnitForSong(song);
   var ab = song.assetbundleName || '';
-  var coverUrl = ab ? 'https://sekai.best/asset_viewer/music/jacket/' + ab : '';
+  var coverUrl = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
 
   // Set cover
   var cover = document.getElementById('modalCover');
@@ -1838,14 +1859,27 @@ function openSongModal(musicId) {
   var inShortSec = song.fillerSec || 0;
   var totalSec = diffs.length > 0 ? (diffs[0].totalNoteCount ? null : null) : null;
 
+  // Get singers from vocals
+  var songVocals = allVocals.filter(function(v){ return v.musicId === musicId; });
+  var singerNames = [];
+  // Only use the first vocal entry (default version, not sekai versions)
+  var defaultVocal = songVocals.find(function(v){ return v.musicVocalType === 'original_song'; }) || songVocals[0];
+  if (defaultVocal && defaultVocal.characters && defaultVocal.characters.length > 0) {
+    defaultVocal.characters.forEach(function(c) {
+      var name = getCharacterName(c.characterId, c.characterType);
+      if (name) singerNames.push(name);
+    });
+  }
+
   var gridItems = [
     { label: 'Unit', value: (UNIT_EMOJI[unit]||'') + ' ' + (UNIT_LABELS[unit]||unit) },
     { label: 'BPM', value: song.bpm ? '♩ ' + song.bpm : '—' },
-    { label: 'Notes (Master)', value: (function(){ var m = diffs.find(function(d){return d.musicDifficulty==='master';}); return m ? m.totalNoteCount : '—'; })() },
-    { label: 'Difficulties', value: diffs.length + ' charts' },
     { label: 'Composer', value: song.composer || '—' },
     { label: 'Lyricist', value: song.lyricist || '—' },
     { label: 'Arranger', value: song.arranger || '—' },
+    { label: 'Notes (Master)', value: (function(){ var m = diffs.find(function(d){return d.musicDifficulty==='master';}); return m ? m.totalNoteCount : '—'; })() },
+    { label: 'Difficulties', value: diffs.length + ' charts' },
+    { label: 'Singers', value: singerNames.length > 0 ? singerNames.join(', ') : '—' },
   ];
 
   document.getElementById('modalGrid').innerHTML = gridItems.map(function(item) {
