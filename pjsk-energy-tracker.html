@@ -18,6 +18,50 @@
     --full-color: #e8b86d;
     --bar-bg: #2a1518;
   }
+  :root[data-mode="light"] {
+    --bg: #f5ede8;
+    --card: #ffffff;
+    --accent1: #c94040;
+    --accent2: #d4603a;
+    --accent3: #b8762d;
+    --text: #2a1010;
+    --muted: #8a6070;
+    --glow: rgba(201, 64, 64, 0.2);
+    --full-color: #b8762d;
+    --bar-bg: #e8d8d0;
+  }
+  :root[data-mode="light"][data-theme="kohane"] {
+    --bg: #fce8f8;
+    --card: #ffffff;
+    --accent1: #c4209a;
+    --accent2: #9020b8;
+    --text: #2a0820;
+    --muted: #906080;
+    --bar-bg: #f0d0e8;
+  }
+  [data-mode="light"] body::before {
+    background:
+      radial-gradient(ellipse 70% 60% at 20% 20%, rgba(201,64,64,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(212,96,58,0.06) 0%, transparent 60%);
+  }
+  [data-mode="light"] .card,
+  [data-mode="light"] .akito-card,
+  [data-mode="light"] .song-card,
+  [data-mode="light"] .home-card,
+  [data-mode="light"] .timer-block,
+  [data-mode="light"] .modal {
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border-color: rgba(0,0,0,0.08);
+  }
+  [data-mode="light"] input[type="number"],
+  [data-mode="light"] select {
+    background: rgba(0,0,0,0.05);
+    color: var(--text);
+    border-color: rgba(0,0,0,0.15);
+  }
+  [data-mode="light"] .search-bar { background: white; }
+  [data-mode="light"] .search-bar input { color: var(--text); }
+  [data-mode="light"] .sidebar { background: white; }
 
   :root[data-theme="kohane"] {
     --bg: #0d0a14;
@@ -771,6 +815,14 @@
     background: rgba(217,70,168,0.15);
     color: var(--accent1);
   }
+  /* Unit-specific filter colors */
+  .filter-chip[data-unit="vs"].active { border-color: #c084fc; background: rgba(192,132,252,0.15); color: #c084fc; }
+  .filter-chip[data-unit="ln"].active { border-color: #22d3ee; background: rgba(34,211,238,0.15); color: #22d3ee; }
+  .filter-chip[data-unit="mmj"].active { border-color: #4ade80; background: rgba(74,222,128,0.15); color: #4ade80; }
+  .filter-chip[data-unit="vbs"].active { border-color: #e8523a; background: rgba(232,82,58,0.15); color: #e8523a; }
+  .filter-chip[data-unit="wxs"].active { border-color: #fbbf24; background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .filter-chip[data-unit="n25"].active { border-color: #818cf8; background: rgba(129,140,248,0.15); color: #818cf8; }
+  .filter-chip[data-unit="other"].active { border-color: #94a3b8; background: rgba(148,163,184,0.15); color: #94a3b8; }
 
   .song-list {
     display: flex;
@@ -818,7 +870,10 @@
   .unit-n25 { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.25); }
   .unit-ln { background: rgba(34,211,238,0.15); color: #22d3ee; border: 1px solid rgba(34,211,238,0.25); }
   .unit-vs { background: rgba(192,132,252,0.15); color: #c084fc; border: 1px solid rgba(192,132,252,0.25); }
-  .unit-other { background: rgba(255,255,255,0.08); color: var(--muted); border: 1px solid rgba(255,255,255,0.1); }
+  .unit-other { background: rgba(100,200,255,0.12); color: #67e8f9; border: 1px solid rgba(100,200,255,0.25); }
+  .unit-inst { background: rgba(255,255,255,0.08); color: #a0a0c0; border: 1px solid rgba(255,255,255,0.15); }
+  .filter-chip[data-unit="other"].active { border-color: #67e8f9; background: rgba(100,200,255,0.12); color: #67e8f9; }
+  .filter-chip[data-unit="inst"].active { border-color: #a0a0c0; background: rgba(160,160,192,0.12); color: #a0a0c0; }
 
   .diff-dots {
     display: flex;
@@ -974,6 +1029,42 @@
   .modal-diff-expert { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
   .modal-diff-master { background: rgba(192,132,252,0.15); color: #c084fc; border: 1px solid rgba(192,132,252,0.3); }
   .modal-diff-append { background: rgba(244,114,182,0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.3); }
+
+  /* Difficulty tooltip */
+  .diff-chip-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .diff-chip-wrap .diff-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10;
+    font-family: 'Fredoka', sans-serif;
+    pointer-events: none;
+  }
+  .diff-chip-wrap .diff-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(255,255,255,0.15);
+  }
+  .diff-chip-wrap:hover .diff-tooltip,
+  .diff-chip-wrap:active .diff-tooltip { display: block; }
   .modal-close {
     width: 100%;
     padding: 0.8rem;
@@ -1022,15 +1113,38 @@
     <div class="nav-item" id="nav-tracker" data-nav="tracker-page">
       <span class="nav-icon">⚡</span> Energy Tracker
     </div>
+    <div class="nav-item" id="nav-songs" data-nav="songs">
+      <span class="nav-icon">🎵</span> Song List
+    </div>
     <div class="nav-section-label" style="margin-top:0.5rem;">Coming Soon</div>
     <div class="nav-item" style="opacity:0.3;cursor:default;">
       <span class="nav-icon">📅</span> Event Tracker
     </div>
-    <div class="nav-item" id="nav-songs" data-nav="songs">
-      <span class="nav-icon">🎵</span> Song List
-    </div>
   </nav>
-  <div class="sidebar-footer">Made with 🧡 for PJSK</div>
+  <div class="sidebar-footer">
+    <div style="margin-bottom:0.6rem;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Character</div>
+    <div id="themeToggle" style="
+      display:flex;align-items:center;gap:0;
+      background:rgba(255,255,255,0.05);
+      border:1.5px solid rgba(255,255,255,0.1);
+      border-radius:999px;
+      overflow:hidden;
+      cursor:pointer;
+      font-family:'Fredoka',sans-serif;
+      font-weight:600;
+      font-size:0.82rem;
+      width:100%;
+    ">
+      <div id="akitoTab" style="flex:1;text-align:center;padding:0.45rem 0.5rem;transition:all 0.3s;background:var(--accent1);color:white;">🧡 Akito</div>
+      <div id="kohaneTab" style="flex:1;text-align:center;padding:0.45rem 0.5rem;transition:all 0.3s;color:var(--muted);">🩷 Kohane</div>
+    </div>
+    <div style="margin-top:0.8rem;margin-bottom:0.6rem;font-size:0.68rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);">Display</div>
+    <div id="modeToggle" style="display:flex;align-items:center;background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:999px;overflow:hidden;cursor:pointer;font-family:'Fredoka',sans-serif;font-weight:600;font-size:0.82rem;width:100%;">
+      <div id="darkTab" style="flex:1;text-align:center;padding:0.45rem 0.5rem;transition:all 0.3s;background:var(--accent1);color:white;">🌙 Dark</div>
+      <div id="lightTab" style="flex:1;text-align:center;padding:0.45rem 0.5rem;transition:all 0.3s;color:var(--muted);">☀️ Light</div>
+    </div>
+    <div style="margin-top:0.8rem;">Made with 🧡 for PJSK</div>
+  </div>
 </div>
 
 <!-- HOME PAGE -->
@@ -1041,12 +1155,16 @@
       <div class="home-hero-title">Welcome to Project KoChan! 🎵</div>
       <div class="home-hero-sub">Your PJSK companion app</div>
     </div>
-    <div class="home-grid">
-      <div class="home-card" data-nav="tracker-page">
-        <div class="hc-icon">⚡</div>
-        <div class="hc-title">Energy Tracker</div>
-        <div class="hc-sub">Track bonus energy & get notified</div>
+    <!-- Energy Tracker full width -->
+    <div class="home-card" data-nav="tracker-page" style="display:flex;align-items:center;gap:1rem;text-align:left;margin-top:0.8rem;">
+      <div style="font-size:2.5rem;flex-shrink:0;">⚡</div>
+      <div style="flex:1;">
+        <div class="hc-title" style="font-size:1.1rem;">Energy Tracker</div>
+        <div class="hc-sub">Track bonus energy &amp; get notified</div>
       </div>
+      <div style="font-size:1.2rem;color:var(--muted);">›</div>
+    </div>
+    <div class="home-grid" style="margin-top:0;">
       <div class="home-card" style="opacity:0.4;cursor:default;">
         <div class="hc-icon">📅</div>
         <div class="hc-title">Event Tracker</div>
@@ -1055,7 +1173,12 @@
       <div class="home-card" data-nav="songs">
         <div class="hc-icon">🎵</div>
         <div class="hc-title">Song List</div>
-        <div class="hc-sub">Search & filter all songs</div>
+        <div class="hc-sub">Search &amp; filter all songs</div>
+      </div>
+      <div class="home-card" style="opacity:0.4;cursor:default;">
+        <div class="hc-icon">👤</div>
+        <div class="hc-title">Custom Profiles</div>
+        <div class="hc-sub">Coming soon!</div>
       </div>
       <div class="home-card" style="opacity:0.4;cursor:default;">
         <div class="hc-icon">🃏</div>
@@ -1074,22 +1197,6 @@
     <div class="logo">Hatsune Miku: Colorful Stage</div>
     <h1>Bonus Energy<br>Tracker</h1>
     <p class="subtitle">Live countdown · Browser notifications</p>
-    <div style="display:flex;justify-content:center;margin-top:1rem;">
-      <div id="themeToggle" style="
-        display:flex;align-items:center;gap:0;
-        background:var(--card);
-        border:1.5px solid rgba(255,255,255,0.1);
-        border-radius:999px;
-        overflow:hidden;
-        cursor:pointer;
-        font-family:'Fredoka',sans-serif;
-        font-weight:600;
-        font-size:0.82rem;
-      ">
-        <div id="akitoTab" style="padding:0.4rem 1.1rem;transition:all 0.3s;background:var(--accent1);color:white;">🧡 Akito</div>
-        <div id="kohaneTab" style="padding:0.4rem 1.1rem;transition:all 0.3s;color:var(--muted);">🩷 Kohane</div>
-      </div>
-    </div>
   </header>
 
   <!-- SETUP CARD -->
@@ -1255,6 +1362,9 @@ function initImages() {
   const si = document.getElementById('setupEnergyIcon'); if(si) si.src = ENERGY_IMG;
   const ui = document.getElementById('updateEnergyIcon'); if(ui) ui.src = ENERGY_IMG;
   const ec = document.getElementById('energyCanDisplay'); if(ec) ec.src = ENERGY_IMG;
+  // Restore saved mode
+  const savedMode = localStorage.getItem('pjsk_mode');
+  if (savedMode === 'light') toggleMode();
   loadState();
 }
 
@@ -1288,6 +1398,12 @@ function loadState() {
 
   if (savedTheme && savedTheme !== currentTheme) {
     toggleTheme();
+  } else if (savedTheme === currentTheme && savedTheme === 'akito') {
+    // Ensure akito tab looks active on fresh load
+    var at = document.getElementById('akitoTab');
+    var kt = document.getElementById('kohaneTab');
+    if (at) { at.style.background = 'var(--accent1)'; at.style.color = 'white'; }
+    if (kt) { kt.style.background = 'transparent'; kt.style.color = 'var(--muted)'; }
   }
   if (savedNotif) {
     notifThreshold = savedNotif;
@@ -1557,6 +1673,27 @@ function updateNotifBtn() {
   btn.className = 'toggle-btn' + (notifEnabled ? ' on' : '');
 }
 
+// Light/Dark mode toggle
+let currentMode = 'dark';
+function toggleMode() {
+  currentMode = currentMode === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-mode', currentMode === 'light' ? 'light' : '');
+  const darkTab = document.getElementById('darkTab');
+  const lightTab = document.getElementById('lightTab');
+  if (currentMode === 'light') {
+    darkTab.style.background = 'transparent';
+    darkTab.style.color = 'var(--muted)';
+    lightTab.style.background = 'var(--accent1)';
+    lightTab.style.color = 'white';
+  } else {
+    lightTab.style.background = 'transparent';
+    lightTab.style.color = 'var(--muted)';
+    darkTab.style.background = 'var(--accent1)';
+    darkTab.style.color = 'white';
+  }
+  localStorage.setItem('pjsk_mode', currentMode);
+}
+
 // Sidebar navigation
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
@@ -1633,6 +1770,8 @@ function toggleTheme() {
 let allSongs = [];
 let allDifficulties = [];
 let currentUnitFilter = 'all';
+let multiSelectMode = false;
+let activeUnitFilters = new Set();
 let songsLoaded = false;
 
 const UNIT_MAP = {
@@ -1649,11 +1788,13 @@ const ALL_TAG = 'all';
 
 const UNIT_LABELS = {
   'ln': 'Leo/need', 'mmj': 'MMJ', 'vbs': 'VBS',
-  'wxs': 'WxS', 'n25': '25-ji', 'vs': 'Virtual Singers', 'other': 'Other'
+  'wxs': 'WxS', 'n25': '25-ji', 'vs': 'Virtual Singers',
+  'other': 'Other', 'inst': 'Instrumental'
 };
 const UNIT_EMOJI = {
-  'ln': '🎸', 'mmj': '🌸', 'vbs': '🎤', 
-  'wxs': '🎪', 'n25': '🌙', 'vs': '🎵', 'other': '🎶'
+  'ln': '🎸', 'mmj': '🌸', 'vbs': '🎤',
+  'wxs': '🎪', 'n25': '🌙', 'vs': '🎵',
+  'other': '🌐', 'inst': '🎼'
 };
 
 let musicTagsMap = {}; // musicId -> unit
@@ -1677,7 +1818,13 @@ async function loadSongs() {
 
     
     // Build a map of musicId -> unit from musicTags
-    // First pass: assign specific unit tags
+    // First pass: mark songs with 'other' tag (collab songs)
+    otherTaggedIds = {};
+    tags.forEach(function(t) {
+      if (t.musicTag === 'other') otherTaggedIds[t.musicId] = true;
+    });
+
+    // Second pass: assign specific unit tags
     tags.forEach(function(t) {
       var tagVal = t.musicTag || '';
       var unit = UNIT_MAP[tagVal];
@@ -1685,7 +1832,14 @@ async function loadSongs() {
         musicTagsMap[t.musicId] = unit;
       }
     });
-    // Second pass: songs tagged 'all' with no specific unit = Virtual Singers
+
+    // Third pass: ALL songs with 'other' tag go in Other category
+    // (Gunjo Sanka etc. will show in Other AND their unit via the unitMatches logic)
+    Object.keys(otherTaggedIds).forEach(function(id) {
+      musicTagsMap[parseInt(id)] = 'other';
+    });
+
+    // Fourth pass: songs tagged 'all' with no specific unit = Virtual Singers
     tags.forEach(function(t) {
       if (t.musicTag === 'all' && !musicTagsMap[t.musicId]) {
         musicTagsMap[t.musicId] = 'vs';
@@ -1695,7 +1849,7 @@ async function loadSongs() {
 
 
     songsLoaded = true;
-    
+
     renderSongs();
   } catch(e) {
     console.error('Song load error:', e);
@@ -1703,10 +1857,21 @@ async function loadSongs() {
   }
 }
 
+function isInstrumental(musicId) {
+  var vocals = allVocals.filter(function(v){ return v.musicId === musicId; });
+  if (vocals.length === 0) return false;
+  // Only truly instrumental if ALL vocal entries are explicitly 'instrumental' type
+  return vocals.every(function(v) {
+    return v.musicVocalType === 'instrumental';
+  });
+}
+
 function getUnitForSong(song) {
-  // First check the musicTagsMap built from musicTags.json
+  // Check instrumental first
+  if (allVocals.length > 0 && isInstrumental(song.id)) return 'inst';
+  // Check musicTagsMap built from musicTags.json
   if (musicTagsMap[song.id]) return musicTagsMap[song.id];
-  // Fallback: check categories on song itself
+  // Fallback: check categories
   if (song.categories && Array.isArray(song.categories)) {
     for (var i = 0; i < song.categories.length; i++) {
       var mapped = UNIT_MAP[song.categories[i]];
@@ -1721,31 +1886,80 @@ function getDifficultiesForSong(musicId) {
 }
 
 function setUnitFilter(unit) {
-  currentUnitFilter = unit;
-  document.querySelectorAll('#unitFilters .filter-chip').forEach(c => {
-    c.classList.toggle('active', c.dataset.unit === unit);
+  if (multiSelectMode) {
+    if (unit === 'all') {
+      activeUnitFilters.clear();
+      currentUnitFilter = 'all';
+    } else {
+      activeUnitFilters.has(unit) ? activeUnitFilters.delete(unit) : activeUnitFilters.add(unit);
+      currentUnitFilter = activeUnitFilters.size > 0 ? 'multi' : 'all';
+    }
+    document.querySelectorAll('#unitFilters .filter-chip').forEach(function(c) {
+      c.classList.toggle('active', c.dataset.unit === 'all' ? activeUnitFilters.size === 0 : activeUnitFilters.has(c.dataset.unit));
+    });
+  } else {
+    currentUnitFilter = unit;
+    activeUnitFilters.clear();
+    document.querySelectorAll('#unitFilters .filter-chip').forEach(function(c) {
+      c.classList.toggle('active', c.dataset.unit === unit);
+    });
+  }
+  renderSongs();
+}
+
+function toggleMultiSelect() {
+  multiSelectMode = !multiSelectMode;
+  activeUnitFilters.clear();
+  currentUnitFilter = 'all';
+  document.querySelectorAll('#unitFilters .filter-chip').forEach(function(c) {
+    c.classList.toggle('active', c.dataset.unit === 'all');
   });
+  var btn = document.getElementById('multiSelectToggle');
+  if (btn) {
+    btn.textContent = 'Multi-select: ' + (multiSelectMode ? 'ON' : 'OFF');
+    btn.style.borderColor = multiSelectMode ? 'var(--accent1)' : 'rgba(255,255,255,0.15)';
+    btn.style.color = multiSelectMode ? 'var(--accent1)' : 'var(--muted)';
+  }
   renderSongs();
 }
 
 function filterSongs() { renderSongs(); }
 
 function renderSongs() {
+
   const query = (document.getElementById('songSearch').value || '').toLowerCase();
   const list = document.getElementById('songList');
   const countEl = document.getElementById('songsCount');
+
 
   // For unit filter, include songs that have sekai versions for this unit
 
   let filtered = allSongs.filter(song => {
     const primaryUnit = getUnitForSong(song);
     const sekaiUnits = getSekaiUnitsForSong(song.id);
-    // VS song with one sekai unit: belongs to that unit, not VS
     const effectiveUnit = (primaryUnit === 'vs' && sekaiUnits.length === 1) ? sekaiUnits[0] : primaryUnit;
+
+    // Check if this song has the 'other' tag (for dual categorization)
+    var isOtherTagged = !!otherTaggedIds[song.id];
+
+    function unitMatches(filter) {
+      if (isOtherTagged) return filter === 'other';
+      if (filter === 'vs') {
+        // Only show in VS if effectiveUnit is VS (meaning not redirected to a sekai unit)
+        return effectiveUnit === 'vs';
+      }
+      if (filter === 'inst') {
+        return effectiveUnit === 'inst';
+      }
+      // Unit filters: songs of that unit + VS songs with sekai version for that unit
+      return effectiveUnit === filter
+        || (primaryUnit === 'vs' && sekaiUnits.indexOf(filter) !== -1);
+    }
+
     const matchUnit = currentUnitFilter === 'all'
-      || effectiveUnit === currentUnitFilter
-      || (primaryUnit === 'vs' && currentUnitFilter === 'vs')
-      || (sekaiUnits.length !== 1 && sekaiUnits.indexOf(currentUnitFilter) !== -1);
+      || (currentUnitFilter === 'multi'
+        ? Array.from(activeUnitFilters).some(function(f){ return unitMatches(f); })
+        : unitMatches(currentUnitFilter));
     const matchQuery = !query ||
       (song.title || '').toLowerCase().includes(query) ||
       (song.lyricist || '').toLowerCase().includes(query) ||
@@ -1766,13 +1980,9 @@ function renderSongs() {
     const diffs = getDifficultiesForSong(song.id);
     const hasDiff = (name) => diffs.some(d => d.musicDifficulty === name);
     var ab = song.assetbundleName || '';
-    // Extract number from jacket_s_001 -> 1, zero pad to 3
-    var jacketNum = ab ? ab.replace('jacket_s_', '') : '';
-    var sekaipediaUrl = jacketNum ? 'https://www.sekaipedia.org/wiki/Special:FilePath/Jacket' + jacketNum + '.png' : '';
-    var jacketNum = ab ? ab.replace('jacket_s_', '') : '';
-  var coverUrl = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
-    var coverFallback1 = sekaipediaUrl;
-    var coverFallback2 = ab ? 'https://minio.dnaroma.eu/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var coverUrl = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var coverFallback1 = ab ? 'https://minio.dnaroma.eu/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var coverFallback2 = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
     var emoji = UNIT_EMOJI[unit] || '🎶';
     // If VS song with exactly one sekai unit, show that as the main badge instead
     var sekaiUnits = getSekaiUnitsForSong(song.id);
@@ -1788,7 +1998,7 @@ function renderSongs() {
         </div>
         <div style="flex:1;min-width:0;">
           <div class="song-title">${song.title || 'Unknown'}</div>
-          <div class="song-artist">${song.lyricist || song.composer || '—'}</div>
+          <div class="song-artist">${song.composer || song.lyricist || '—'}</div>
           <div class="song-meta">
             <span class="unit-badge unit-${displayUnit}">${displayEmoji} ${UNIT_LABELS[displayUnit] || displayUnit}</span>
             ${getSekaiUnitBadges(song.id, displayUnit)}
@@ -1819,6 +2029,9 @@ function runInit() {
     el.addEventListener('click', function() { setUnitFilter(el.getAttribute('data-unit')); });
   });
 
+  var multiBtn = document.getElementById('multiSelectToggle');
+  if (multiBtn) multiBtn.addEventListener('click', toggleMultiSelect);
+
   // Buttons by ID
   var startBtn = document.getElementById('startBtn');
   if (startBtn) startBtn.addEventListener('click', startTracking);
@@ -1831,6 +2044,9 @@ function runInit() {
 
   var notifBtn = document.getElementById('notifBtn');
   if (notifBtn) notifBtn.addEventListener('click', toggleNotif);
+
+  var modeToggle = document.getElementById('modeToggle');
+  if (modeToggle) modeToggle.addEventListener('click', toggleMode);
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', runInit);
@@ -1959,7 +2175,6 @@ function openSongModal(musicId) {
 
   var unit = getUnitForSong(song);
   var ab = song.assetbundleName || '';
-  var jacketNum = ab ? ab.replace('jacket_s_', '') : '';
   var coverUrl = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
 
   // Set cover
@@ -1968,7 +2183,8 @@ function openSongModal(musicId) {
     cover.src = coverUrl;
     cover.style.display = 'block';
     cover.onerror = function() {
-      cover.src = ab ? 'https://www.sekaipedia.org/wiki/Special:FilePath/Jacket' + (ab.replace('jacket_s_','')) + '.png' : '';
+      cover.src = ab ? 'https://minio.dnaroma.eu/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+      cover.onerror = function() { this.style.display = 'none'; };
       cover.onerror = function() { cover.style.display = 'none'; };
     };
   } else { cover.style.display = 'none'; }
@@ -1999,7 +2215,9 @@ function openSongModal(musicId) {
   document.getElementById('modalDiffs').innerHTML = diffOrder.map(function(d) {
     var diff = diffs.find(function(x) { return x.musicDifficulty === d; });
     if (!diff) return '';
-    return '<span class="modal-diff-chip modal-diff-' + d + '">' + diffLabels[d] + ' ' + (diff.playLevel||'?') + '</span>';
+    var combo = diff.totalNoteCount ? diff.totalNoteCount + ' combo' : '';
+    var tooltip = combo ? '<span class="diff-tooltip">MAX ' + combo + '</span>' : '';
+    return '<span class="diff-chip-wrap"><span class="modal-diff-chip modal-diff-' + d + '">' + diffLabels[d] + ' ' + (diff.playLevel||'?') + '</span>' + tooltip + '</span>';
   }).join('');
 
   // Vocal versions section
@@ -2071,6 +2289,10 @@ function formatSongTime(sec) {
       <span class="search-icon">🔍</span>
       <input type="text" id="songSearch" placeholder="Search songs or artists..." oninput="filterSongs()">
     </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;">Filter by unit</div>
+      <button id="multiSelectToggle" style="background:transparent;border:1.5px solid rgba(255,255,255,0.15);border-radius:999px;padding:0.25rem 0.7rem;color:var(--muted);font-family:'Fredoka',sans-serif;font-weight:700;font-size:0.72rem;cursor:pointer;">Multi-select: OFF</button>
+    </div>
     <div class="filter-row" id="unitFilters" style="margin-bottom:0.8rem;">
       <div class="filter-chip active" data-unit="all">All</div>
       <div class="filter-chip" data-unit="vs">Virtual Singers</div>
@@ -2079,6 +2301,7 @@ function formatSongTime(sec) {
       <div class="filter-chip" data-unit="vbs">VBS</div>
       <div class="filter-chip" data-unit="wxs">WxS</div>
       <div class="filter-chip" data-unit="n25">25-ji</div>
+      <div class="filter-chip" data-unit="other">🌐 Other</div>
     </div>
     <div class="songs-count" id="songsCount"></div>
     <div class="song-list" id="songList">
