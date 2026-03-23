@@ -826,6 +826,7 @@
     align-items: center;
     margin-left: auto;
   }
+  .diff-dots { gap: 3px; }
   .diff-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
@@ -837,6 +838,20 @@
   .diff-hard { background: #fbbf24; }
   .diff-expert { background: #f87171; }
   .diff-master { background: #c084fc; }
+  .diff-append { background: #f472b6; }
+  .append-badge {
+    display: none;
+    background: rgba(244,114,182,0.15);
+    border: 1px solid rgba(244,114,182,0.35);
+    color: #f472b6;
+    border-radius: 6px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    letter-spacing: 0.06em;
+    font-family: 'Fredoka', sans-serif;
+  }
+  .append-badge.visible { display: inline-block; }
 
   .songs-count {
     font-size: 0.78rem;
@@ -958,6 +973,7 @@
   .modal-diff-hard { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); }
   .modal-diff-expert { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
   .modal-diff-master { background: rgba(192,132,252,0.15); color: #c084fc; border: 1px solid rgba(192,132,252,0.3); }
+  .modal-diff-append { background: rgba(244,114,182,0.15); color: #f472b6; border: 1px solid rgba(244,114,182,0.3); }
   .modal-close {
     width: 100%;
     padding: 0.8rem;
@@ -1120,7 +1136,13 @@
   <div class="card" id="tracker">
     <div class="section-title">Live Energy</div>
     <div class="energy-display">
-      <div class="energy-visual" id="energyOrbs"></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin:0.5rem 0;">
+        <img id="energyCanDisplay" src="" style="width:64px;height:64px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(232,82,58,0.6));">
+        <div>
+          <div class="count-display" id="countDisplay" style="-webkit-text-fill-color:unset;">0</div>
+          <div class="count-sub" id="countSub">/ 15 bonus energy</div>
+        </div>
+      </div>
       <div class="count-display" id="countDisplay">0</div>
       <div class="count-sub" id="countSub">/ 10 bonus energy</div>
       <div id="fullBadge"></div>
@@ -1232,6 +1254,7 @@ function initImages() {
   const charImg = document.getElementById('charImgEl'); if(charImg) charImg.src = AKITO_IMG;
   const si = document.getElementById('setupEnergyIcon'); if(si) si.src = ENERGY_IMG;
   const ui = document.getElementById('updateEnergyIcon'); if(ui) ui.src = ENERGY_IMG;
+  const ec = document.getElementById('energyCanDisplay'); if(ec) ec.src = ENERGY_IMG;
   loadState();
 }
 
@@ -1272,13 +1295,14 @@ function loadState() {
     if (el) el.value = savedNotif;
   }
   if (saved) {
-    trackState = JSON.parse(saved);
+    var parsed = JSON.parse(saved);
+    if (!parsed || !parsed.startTime || !parsed.maxEnergy) return false;
+
+    trackState = parsed;
     notifThreshold = notifThreshold || 'max';
     notifiedAt = -1;
 
-    // Navigate to tracker page
     navigateTo('tracker-page');
-
     document.getElementById('setup').style.display = 'none';
     document.getElementById('tracker').style.display = 'block';
     document.getElementById('notifCard').style.display = 'block';
@@ -1398,35 +1422,27 @@ function updateDisplay() {
   const max = trackState.maxEnergy;
   const isFull = cur >= max;
 
-  // Orbs
-  const orbsEl = document.getElementById('energyOrbs');
-  const orbCount = Math.min(max, 10);
-  orbsEl.innerHTML = '';
-  for (let i = 0; i < orbCount; i++) {
-    const orb = document.createElement('img');
-    orb.src = ENERGY_IMG;
-    orb.style.cssText = 'width:34px;height:34px;object-fit:contain;flex-shrink:0;transition:filter 0.4s;' + (i < cur ? 'filter:drop-shadow(0 0 8px rgba(232,82,58,0.6));' : 'filter:grayscale(1) opacity(0.25);');
-    orb.alt = 'energy';
-    orbsEl.appendChild(orb);
-  }
-  if (max > 10) {
-    // Show text instead for large max
-    orbsEl.innerHTML = `<span style="font-size:0.85rem;color:var(--muted);font-weight:700;">(showing top 10 of ${max})</span>`;
-    for (let i = 0; i < 10; i++) {
-      const orb = document.createElement('img');
-      const filled = i < Math.min(cur, 10);
-      orb.src = ENERGY_IMG;
-      orb.style.cssText = 'width:34px;height:34px;object-fit:contain;flex-shrink:0;transition:filter 0.4s;' + (filled ? 'filter:drop-shadow(0 0 8px rgba(232,82,58,0.6));' : 'filter:grayscale(1) opacity(0.25);');
-      orb.alt = 'energy';
-      orbsEl.appendChild(orb);
+  // Update energy can glow based on fullness
+  const canEl = document.getElementById('energyCanDisplay');
+  if (canEl) {
+    if (isFull) {
+      canEl.style.filter = 'drop-shadow(0 0 20px rgba(232,82,58,0.9))';
+    } else if (cur / max >= 0.7) {
+      canEl.style.filter = 'drop-shadow(0 0 12px rgba(232,82,58,0.6))';
+    } else {
+      canEl.style.filter = 'drop-shadow(0 0 6px rgba(232,82,58,0.3)) saturate(0.6)';
     }
-    orbsEl.querySelector('span').style.order = '99';
   }
 
   // Count
   const countEl = document.getElementById('countDisplay');
   countEl.textContent = cur;
-  countEl.className = 'count-display' + (isFull ? ' is-full' : '');
+  countEl.style.background = isFull
+    ? 'linear-gradient(135deg, #4ade80, #22d3ee)'
+    : 'linear-gradient(135deg, var(--accent1), var(--accent2))';
+  countEl.style.webkitBackgroundClip = 'text';
+  countEl.style.backgroundClip = 'text';
+  countEl.style.webkitTextFillColor = 'transparent';
   document.getElementById('countSub').textContent = `/ ${max} bonus energy`;
 
   // Full badge - only update if state changed to avoid flicker
@@ -1607,7 +1623,7 @@ function toggleTheme() {
     if (charImg) charImg.src = AKITO_IMG;
     if (charName) charName.innerHTML = 'Akito<br>Shinonome';
     if (charUnit) charUnit.textContent = 'Vivid BAD SQUAD';
-    if (charQuote) charQuote.textContent = `We climbed that wall together — don't let this energy go to waste. The top of the world is waiting for us!`;
+    if (charQuote) charQuote.textContent = `Don't keep me waiting — go use that energy!`;
   }
 }
 
@@ -1679,6 +1695,7 @@ async function loadSongs() {
 
 
     songsLoaded = true;
+    
     renderSongs();
   } catch(e) {
     console.error('Song load error:', e);
@@ -1718,8 +1735,17 @@ function renderSongs() {
   const list = document.getElementById('songList');
   const countEl = document.getElementById('songsCount');
 
+  // For unit filter, include songs that have sekai versions for this unit
+
   let filtered = allSongs.filter(song => {
-    const matchUnit = currentUnitFilter === 'all' || getUnitForSong(song) === currentUnitFilter;
+    const primaryUnit = getUnitForSong(song);
+    const sekaiUnits = getSekaiUnitsForSong(song.id);
+    // VS song with one sekai unit: belongs to that unit, not VS
+    const effectiveUnit = (primaryUnit === 'vs' && sekaiUnits.length === 1) ? sekaiUnits[0] : primaryUnit;
+    const matchUnit = currentUnitFilter === 'all'
+      || effectiveUnit === currentUnitFilter
+      || (primaryUnit === 'vs' && currentUnitFilter === 'vs')
+      || (sekaiUnits.length !== 1 && sekaiUnits.indexOf(currentUnitFilter) !== -1);
     const matchQuery = !query ||
       (song.title || '').toLowerCase().includes(query) ||
       (song.lyricist || '').toLowerCase().includes(query) ||
@@ -1740,10 +1766,19 @@ function renderSongs() {
     const diffs = getDifficultiesForSong(song.id);
     const hasDiff = (name) => diffs.some(d => d.musicDifficulty === name);
     var ab = song.assetbundleName || '';
-    var coverUrl = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
-    var coverFallback1 = ab ? 'https://storage.sekai.best/sekai-jp-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
-    var coverFallback2 = '';
+    // Extract number from jacket_s_001 -> 1, zero pad to 3
+    var jacketNum = ab ? ab.replace('jacket_s_', '') : '';
+    var sekaipediaUrl = jacketNum ? 'https://www.sekaipedia.org/wiki/Special:FilePath/Jacket' + jacketNum + '.png' : '';
+    var jacketNum = ab ? ab.replace('jacket_s_', '') : '';
+  var coverUrl = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var coverFallback1 = sekaipediaUrl;
+    var coverFallback2 = ab ? 'https://minio.dnaroma.eu/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
     var emoji = UNIT_EMOJI[unit] || '🎶';
+    // If VS song with exactly one sekai unit, show that as the main badge instead
+    var sekaiUnits = getSekaiUnitsForSong(song.id);
+    var displayUnit = (unit === 'vs' && sekaiUnits.length === 1) ? sekaiUnits[0] : unit;
+    var displayEmoji = UNIT_EMOJI[displayUnit] || '🎶';
+    var showVSBadge = (displayUnit !== unit); // show VS badge as secondary if we switched
     return `
       <div class="song-card" style="display:flex;gap:0.8rem;align-items:center;cursor:pointer;" onclick="openSongModal(${song.id})">
         <div style="width:56px;height:56px;border-radius:10px;flex-shrink:0;background:var(--bar-bg);overflow:hidden;display:flex;align-items:center;justify-content:center;">
@@ -1755,15 +1790,10 @@ function renderSongs() {
           <div class="song-title">${song.title || 'Unknown'}</div>
           <div class="song-artist">${song.lyricist || song.composer || '—'}</div>
           <div class="song-meta">
-            <span class="unit-badge unit-${unit}">${emoji} ${UNIT_LABELS[unit] || unit}</span>
+            <span class="unit-badge unit-${displayUnit}">${displayEmoji} ${UNIT_LABELS[displayUnit] || displayUnit}</span>
+            ${getSekaiUnitBadges(song.id, displayUnit)}
             ${song.bpm ? `<span class="bpm-tag">♩${song.bpm} BPM</span>` : ''}
-            <div class="diff-dots">
-              <div class="diff-dot diff-easy ${hasDiff('easy') ? 'has' : ''}" title="Easy"></div>
-              <div class="diff-dot diff-normal ${hasDiff('normal') ? 'has' : ''}" title="Normal"></div>
-              <div class="diff-dot diff-hard ${hasDiff('hard') ? 'has' : ''}" title="Hard"></div>
-              <div class="diff-dot diff-expert ${hasDiff('expert') ? 'has' : ''}" title="Expert"></div>
-              <div class="diff-dot diff-master ${hasDiff('master') ? 'has' : ''}" title="Master"></div>
-            </div>
+            <span class="append-badge ${hasDiff('append') ? 'visible' : ''}">APPEND</span>
           </div>
         </div>
       </div>`;
@@ -1810,6 +1840,35 @@ if (document.readyState === 'loading') {
 // Event listeners merged into runInit()
 
 
+// Unit character ID map
+const UNIT_CHAR_IDS = {'ln':[1,2,3,4],'mmj':[5,6,7,8],'vbs':[9,10,11,12],'wxs':[13,14,15,16],'n25':[17,18,19,20]};
+
+// Cache sekai units per song for performance
+var sekaiUnitsCache = {};
+function getSekaiUnitsForSong(musicId) {
+  if (sekaiUnitsCache[musicId] !== undefined) return sekaiUnitsCache[musicId];
+  var units = [];
+  if (allVocals.length > 0) {
+    Object.keys(UNIT_CHAR_IDS).forEach(function(u) {
+      var ids = UNIT_CHAR_IDS[u];
+      var has = allVocals.some(function(v) {
+        return v.musicId === musicId && v.musicVocalType === 'sekai' && v.characters &&
+          v.characters.some(function(c){ return c.characterType === 'game_character' && ids.indexOf(c.characterId) !== -1; });
+      });
+      if (has) units.push(u);
+    });
+  }
+  sekaiUnitsCache[musicId] = units;
+  return units;
+}
+
+function getSekaiUnitBadges(musicId, primaryUnit) {
+  var units = getSekaiUnitsForSong(musicId);
+  return units.filter(function(u){ return u !== primaryUnit; })
+    .map(function(u){ return '<span class="unit-badge unit-' + u + '" style="opacity:0.7;font-size:0.65rem;">' + (UNIT_EMOJI[u]||'') + ' ' + (UNIT_LABELS[u]||u) + '</span>'; })
+    .join('');
+}
+
 // Character name lookup
 const CHAR_NAMES = {
   1:'Ichika', 2:'Saki', 3:'Honami', 4:'Shiho',
@@ -1819,20 +1878,89 @@ const CHAR_NAMES = {
   17:'Kanade', 18:'Mafuyu', 19:'Ena', 20:'Mizuki',
   21:'Miku', 22:'Rin', 23:'Len', 24:'Luka', 25:'MEIKO', 26:'KAITO'
 };
+// Outside characters - mapped from actual musicVocals.json IDs
+const OUTSIDE_CHAR_NAMES = {
+  1: 'GUMI',
+  2: 'IA',
+  3: 'flower',
+  4: 'GUMI',       // Totemoitai Itagaritai
+  5: 'flower',     // Positive Dance Time
+  6: 'GUMI',       // Do not go
+  7: 'Zundamon',   // Tokugawa Cupnoodle
+  8: 'Zundamon',   // Tokugawa Cupnoodle
+  9: 'flower',     // phony
+  10: 'GUMI',      // Bad End Night
+  11: 'Sekai-chan',
+  12: 'KAFU',
+  13: 'KAFU',      // Tenshi no Tsubasa
+  14: 'KAFU',      // Be The MUSIC!
+  15: 'flower',    // It's just life
+  16: 'Zundamon',  // Zunda Party Night
+  17: 'flower',    // KLY
+  18: 'GUMI',      // KLY
+  19: 'IA',        // KLY
+  20: 'KAFU',      // KLY
+  21: 'Zundamon',  // KLY
+  22: 'GUMI',      // Odorobo
+  23: 'flower',    // Odorobo
+  24: 'Kasane Teto', // AI no UTA
+  31: 'flower',    // Achikochi Date-san
+  32: 'IA',        // WAVE
+  33: 'MEIKA Hime',// Ángel
+  34: 'KAFU',      // HANAOBORE
+  35: 'KAFU',      // Fusion
+  36: 'KAFU',      // KING
+  37: 'KAFU',      // Fragile
+  38: 'KAFU',      // Worlders
+  39: 'KAFU',      // Gunjo Sanka
+  40: 'GUMI',      // Sad Machine
+};
 function getCharacterName(id, type) {
   if (type === 'game_character') return CHAR_NAMES[id] || 'Char ' + id;
-  if (type === 'outside_character') return 'Guest';
+  if (type === 'outside_character') return OUTSIDE_CHAR_NAMES[id] || 'Guest';
   return null;
 }
 
 // Song modal
+const VOCAL_TYPE_LABELS = {
+  'original_song': 'Original',
+  'sekai': 'Sekai Ver.',
+  'append': 'Append',
+  'beyond_the_stage': 'BTS',
+  'instrumental': 'Instrumental'
+};
+
+function getVocalSingers(vocal) {
+  var names = [];
+  if (vocal.characters) {
+    vocal.characters.forEach(function(c) {
+      var name = getCharacterName(c.characterId, c.characterType);
+      if (name && name !== 'Guest') names.push(name);
+    });
+  }
+  return names;
+}
+
+function getVocalUnit(vocal) {
+  if (!vocal.characters) return null;
+  for (var u in UNIT_CHAR_IDS) {
+    var ids = UNIT_CHAR_IDS[u];
+    var hasUnit = vocal.characters.some(function(c) {
+      return c.characterType === 'game_character' && ids.indexOf(c.characterId) !== -1;
+    });
+    if (hasUnit) return u;
+  }
+  return null;
+}
+
 function openSongModal(musicId) {
   var song = allSongs.find(function(s) { return s.id === musicId; });
   if (!song) return;
-  
+
   var unit = getUnitForSong(song);
   var ab = song.assetbundleName || '';
-  var coverUrl = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
+  var jacketNum = ab ? ab.replace('jacket_s_', '') : '';
+  var coverUrl = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
 
   // Set cover
   var cover = document.getElementById('modalCover');
@@ -1840,60 +1968,76 @@ function openSongModal(musicId) {
     cover.src = coverUrl;
     cover.style.display = 'block';
     cover.onerror = function() {
-      cover.src = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.png' : '';
+      cover.src = ab ? 'https://www.sekaipedia.org/wiki/Special:FilePath/Jacket' + (ab.replace('jacket_s_','')) + '.png' : '';
       cover.onerror = function() { cover.style.display = 'none'; };
     };
-  } else {
-    cover.style.display = 'none';
-  }
+  } else { cover.style.display = 'none'; }
 
   document.getElementById('modalTitle').textContent = song.title || 'Unknown';
-  document.getElementById('modalArtist').textContent = 
-    [song.lyricist !== song.composer ? 'Lyrics: ' + (song.lyricist||'—') : '', 
-     'Music: ' + (song.composer||'—'),
-     song.arranger ? 'Arr: ' + song.arranger : '']
+  document.getElementById('modalArtist').textContent =
+    ['Music: ' + (song.composer||'—'),
+     song.arranger && song.arranger !== song.composer ? 'Arr: ' + song.arranger : '']
     .filter(Boolean).join(' · ');
 
-  // Info grid
   var diffs = getDifficultiesForSong(musicId);
-  var inShortSec = song.fillerSec || 0;
-  var totalSec = diffs.length > 0 ? (diffs[0].totalNoteCount ? null : null) : null;
+  var diffOrder = ['easy','normal','hard','expert','master','append'];
+  var diffLabels = {easy:'Easy',normal:'Normal',hard:'Hard',expert:'Expert',master:'Master',append:'Append'};
 
-  // Get singers from vocals
-  var songVocals = allVocals.filter(function(v){ return v.musicId === musicId; });
-  var singerNames = [];
-  // Only use the first vocal entry (default version, not sekai versions)
-  var defaultVocal = songVocals.find(function(v){ return v.musicVocalType === 'original_song'; }) || songVocals[0];
-  if (defaultVocal && defaultVocal.characters && defaultVocal.characters.length > 0) {
-    defaultVocal.characters.forEach(function(c) {
-      var name = getCharacterName(c.characterId, c.characterType);
-      if (name) singerNames.push(name);
-    });
-  }
-
-  var gridItems = [
+  // Base info grid
+  document.getElementById('modalGrid').innerHTML = [
     { label: 'Unit', value: (UNIT_EMOJI[unit]||'') + ' ' + (UNIT_LABELS[unit]||unit) },
     { label: 'BPM', value: song.bpm ? '♩ ' + song.bpm : '—' },
     { label: 'Composer', value: song.composer || '—' },
     { label: 'Lyricist', value: song.lyricist || '—' },
     { label: 'Arranger', value: song.arranger || '—' },
     { label: 'Notes (Master)', value: (function(){ var m = diffs.find(function(d){return d.musicDifficulty==='master';}); return m ? m.totalNoteCount : '—'; })() },
-    { label: 'Difficulties', value: diffs.length + ' charts' },
-    { label: 'Singers', value: singerNames.length > 0 ? singerNames.join(', ') : '—' },
-  ];
-
-  document.getElementById('modalGrid').innerHTML = gridItems.map(function(item) {
+  ].map(function(item) {
     return '<div class="modal-info-block"><div class="modal-info-label">' + item.label + '</div><div class="modal-info-value">' + item.value + '</div></div>';
   }).join('');
 
   // Difficulty chips
-  var diffOrder = ['easy','normal','hard','expert','master'];
-  var diffLabels = {easy:'Easy',normal:'Normal',hard:'Hard',expert:'Expert',master:'Master'};
   document.getElementById('modalDiffs').innerHTML = diffOrder.map(function(d) {
     var diff = diffs.find(function(x) { return x.musicDifficulty === d; });
     if (!diff) return '';
     return '<span class="modal-diff-chip modal-diff-' + d + '">' + diffLabels[d] + ' ' + (diff.playLevel||'?') + '</span>';
   }).join('');
+
+  // Vocal versions section
+  var songVocals = allVocals.filter(function(v){ return v.musicId === musicId; });
+  var vocalsHtml = '';
+  if (songVocals.length > 0) {
+    vocalsHtml = '<div style="margin-top:1rem;"><div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;">Vocal Versions</div>';
+    // Sort: original_song first, sekai second, others after
+  songVocals.sort(function(a, b) {
+    var order = {'original_song': 0, 'sekai': 1};
+    var ao = order[a.musicVocalType] !== undefined ? order[a.musicVocalType] : 2;
+    var bo = order[b.musicVocalType] !== undefined ? order[b.musicVocalType] : 2;
+    return ao - bo;
+  });
+  songVocals.forEach(function(v) {
+      var singers = getVocalSingers(v);
+      var vUnit = getVocalUnit(v);
+      var typeLabel = VOCAL_TYPE_LABELS[v.musicVocalType] || v.musicVocalType;
+      var unitLabel = vUnit ? ((UNIT_EMOJI[vUnit]||'') + ' ' + (UNIT_LABELS[vUnit]||vUnit)) : '';
+      vocalsHtml += '<div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:0.7rem 0.9rem;margin-bottom:0.5rem;">';
+      vocalsHtml += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.3rem;">';
+      vocalsHtml += '<span style="font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--accent1);">' + typeLabel + '</span>';
+      if (unitLabel) vocalsHtml += '<span class="unit-badge unit-' + (vUnit||'other') + '" style="font-size:0.65rem;padding:0.15rem 0.5rem;">' + unitLabel + '</span>';
+      vocalsHtml += '</div>';
+      vocalsHtml += '<div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:0.88rem;color:var(--text);">' + (singers.length > 0 ? singers.join(', ') : '—') + '</div>';
+      vocalsHtml += '</div>';
+    });
+    vocalsHtml += '</div>';
+  }
+
+  // Insert vocals after diffs
+  var existingVocals = document.getElementById('modalVocals');
+  if (!existingVocals) {
+    var vocalsDiv = document.createElement('div');
+    vocalsDiv.id = 'modalVocals';
+    document.getElementById('modalDiffs').insertAdjacentElement('afterend', vocalsDiv);
+  }
+  document.getElementById('modalVocals').innerHTML = vocalsHtml;
 
   document.getElementById('songModal').classList.add('open');
   document.body.style.overflow = 'hidden';
