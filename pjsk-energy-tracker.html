@@ -1085,6 +1085,170 @@
     margin-right: 0.2rem;
   }
 
+
+  /* Card Gallery */
+  .char-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+  }
+  .char-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.4rem 0.2rem;
+    border-radius: 10px;
+    border: 1.5px solid rgba(255,255,255,0.08);
+    background: var(--card);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--muted);
+    font-family: 'Fredoka', sans-serif;
+    text-align: center;
+  }
+  .char-chip.active {
+    border-color: var(--accent1);
+    color: var(--accent1);
+    background: rgba(201,64,64,0.1);
+  }
+  .char-chip .char-initial {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Fredoka', sans-serif;
+  }
+  .rarity-filter-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .rarity-chip {
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    background: var(--card);
+    color: var(--muted);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .rarity-chip.active { border-color: var(--accent1); color: var(--accent1); background: rgba(201,64,64,0.1); }
+  .rarity-chip.r1.active { border-color: #94a3b8; color: #94a3b8; background: rgba(148,163,184,0.1); }
+  .rarity-chip.r2.active { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,0.1); }
+  .rarity-chip.r3.active { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,0.1); }
+  .rarity-chip.r4.active { border-color: #fbbf24; color: #fbbf24; background: rgba(251,191,36,0.1); }
+  .rarity-chip.rb.active { border-color: #f472b6; color: #f472b6; background: rgba(244,114,182,0.1); }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+  }
+  .card-item {
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    background: var(--card);
+    aspect-ratio: 8/9;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-item.owned { border-color: var(--accent1); }
+  .card-item.owned::after {
+    content: '✓';
+    position: absolute;
+    top: 4px; right: 4px;
+    background: var(--accent1);
+    color: white;
+    border-radius: 50%;
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+  }
+  .card-img-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--bar-bg);
+    position: relative;
+  }
+  .card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .card-no-img {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1.8rem;
+    color: var(--muted);
+  }
+  .card-footer {
+    padding: 0.3rem 0.4rem;
+    background: rgba(0,0,0,0.3);
+  }
+  .card-char-name {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 0.68rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-rarity {
+    font-size: 0.6rem;
+    color: var(--muted);
+  }
+  .star-r1 { color: #94a3b8; }
+  .star-r2 { color: #4ade80; }
+  .star-r3 { color: #60a5fa; }
+  .star-r4 { color: #fbbf24; }
+  .star-rb { color: #f472b6; }
+
+  .owned-toggle-btn {
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    background: var(--card);
+    color: var(--muted);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .owned-toggle-btn.active {
+    border-color: var(--accent1);
+    color: var(--accent1);
+    background: rgba(201,64,64,0.1);
+  }
+  .cards-count {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-align: center;
+    padding: 0.3rem;
+  }
+
 </style>
 </head>
 <body>
@@ -1115,6 +1279,9 @@
     </div>
     <div class="nav-item" id="nav-songs" data-nav="songs">
       <span class="nav-icon">🎵</span> Song List
+    </div>
+    <div class="nav-item" id="nav-cards" data-nav="cards">
+      <span class="nav-icon">🃏</span> Card Gallery
     </div>
     <div class="nav-section-label" style="margin-top:0.5rem;">Coming Soon</div>
     <div class="nav-item" style="opacity:0.3;cursor:default;">
@@ -1180,10 +1347,10 @@
         <div class="hc-title">Custom Profiles</div>
         <div class="hc-sub">Coming soon!</div>
       </div>
-      <div class="home-card" style="opacity:0.4;cursor:default;">
+      <div class="home-card" data-nav="cards">
         <div class="hc-icon">🃏</div>
         <div class="hc-title">Card Gallery</div>
-        <div class="hc-sub">Coming soon!</div>
+        <div class="hc-sub">Browse & track your cards</div>
       </div>
     </div>
   </div>
@@ -1250,8 +1417,7 @@
           <div class="count-sub" id="countSub">/ 15 bonus energy</div>
         </div>
       </div>
-      <div class="count-display" id="countDisplay">0</div>
-      <div class="count-sub" id="countSub">/ 10 bonus energy</div>
+
       <div id="fullBadge"></div>
       <div class="progress-bar-wrap">
         <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
@@ -1729,6 +1895,7 @@ function navigateTo(pageId) {
   closeSidebar();
   // Load songs on demand
   if (pageId === 'songs' && !songsLoaded) loadSongs();
+  if (pageId === 'cards' && !cardsLoaded) loadCards();
 }
 
 let currentTheme = 'akito';
@@ -1980,9 +2147,20 @@ function renderSongs() {
     const diffs = getDifficultiesForSong(song.id);
     const hasDiff = (name) => diffs.some(d => d.musicDifficulty === name);
     var ab = song.assetbundleName || '';
-    var coverUrl = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
-    var coverFallback1 = ab ? 'https://minio.dnaroma.eu/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
-    var coverFallback2 = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var unitColors = {
+      'ln': 'linear-gradient(135deg,#22d3ee,#0891b2)',
+      'mmj': 'linear-gradient(135deg,#4ade80,#16a34a)',
+      'vbs': 'linear-gradient(135deg,#f87171,#c94040)',
+      'wxs': 'linear-gradient(135deg,#fbbf24,#d97706)',
+      'n25': 'linear-gradient(135deg,#818cf8,#4f46e5)',
+      'vs': 'linear-gradient(135deg,#c084fc,#9333ea)',
+      'other': 'linear-gradient(135deg,#67e8f9,#0e7490)',
+      'inst': 'linear-gradient(135deg,#94a3b8,#475569)'
+    };
+    var coverGradient = unitColors[displayUnit] || unitColors['vs'];
+    var coverUrl = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var coverFallback1 = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var coverFallback2 = '';
     var emoji = UNIT_EMOJI[unit] || '🎶';
     // If VS song with exactly one sekai unit, show that as the main badge instead
     var sekaiUnits = getSekaiUnitsForSong(song.id);
@@ -1991,10 +2169,10 @@ function renderSongs() {
     var showVSBadge = (displayUnit !== unit); // show VS badge as secondary if we switched
     return `
       <div class="song-card" style="display:flex;gap:0.8rem;align-items:center;cursor:pointer;" onclick="openSongModal(${song.id})">
-        <div style="width:56px;height:56px;border-radius:10px;flex-shrink:0;background:var(--bar-bg);overflow:hidden;display:flex;align-items:center;justify-content:center;">
-          ${coverUrl ? `<img src="${coverUrl}" alt="cover" style="width:56px;height:56px;object-fit:cover;" 
+        <div style="width:56px;height:56px;border-radius:10px;flex-shrink:0;background:${coverGradient};overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;">
+          ${coverUrl ? `<img src="${coverUrl}" alt="cover" style="width:56px;height:56px;object-fit:cover;position:absolute;inset:0;" 
             data-fb1="${coverFallback1}" data-fb2="${coverFallback2}"
-            onerror="var fb=this.getAttribute('data-fb1');if(fb&&this.src!==fb){this.src=fb;this.setAttribute('data-fb1','');}else{var fb2=this.getAttribute('data-fb2');if(fb2&&this.src!==fb2){this.src=fb2;}else{this.outerHTML='<span style=\'font-size:1.4rem;\'>🎵</span>';}}">`  : '<span style="font-size:1.4rem;">🎵</span>'}
+            onerror="var fb=this.getAttribute('data-fb1');if(fb&&this.src!==fb){this.src=fb;this.setAttribute('data-fb1','');}else{var fb2=this.getAttribute('data-fb2');if(fb2&&this.src!==fb2){this.src=fb2;}else{this.remove();}}">`  : '<span style="font-size:1.4rem;">🎵</span>'}
         </div>
         <div style="flex:1;min-width:0;">
           <div class="song-title">${song.title || 'Unknown'}</div>
@@ -2047,6 +2225,52 @@ function runInit() {
 
   var modeToggle = document.getElementById('modeToggle');
   if (modeToggle) modeToggle.addEventListener('click', toggleMode);
+
+  // Card filter button (dropdown toggle)
+  var cardFilterBtn = document.getElementById('cardFilterBtn');
+  if (cardFilterBtn) cardFilterBtn.addEventListener('click', toggleCardFilterPanel);
+
+  // Rarity filters
+  document.querySelectorAll('#rarityFilters .rarity-chip').forEach(function(el) {
+    el.addEventListener('click', function() {
+      activeRarityFilter = el.getAttribute('data-rarity');
+      document.querySelectorAll('#rarityFilters .rarity-chip').forEach(function(c) { c.classList.remove('active'); });
+      el.classList.add('active');
+      updateActiveFilterCount();
+      renderCards();
+    });
+  });
+
+  // Unit card filters
+  document.querySelectorAll('#unitCardFilters .rarity-chip').forEach(function(el) {
+    el.addEventListener('click', function() {
+      activeUnitCardFilter = el.getAttribute('data-unit-card');
+      document.querySelectorAll('#unitCardFilters .rarity-chip').forEach(function(c) { c.classList.remove('active'); });
+      el.classList.add('active');
+      updateActiveFilterCount();
+      renderCards();
+    });
+  });
+
+  // Card type filters
+  document.querySelectorAll('#cardTypeFilters .rarity-chip').forEach(function(el) {
+    el.addEventListener('click', function() {
+      activeCardTypeFilter = el.getAttribute('data-card-type');
+      document.querySelectorAll('#cardTypeFilters .rarity-chip').forEach(function(c) { c.classList.remove('active'); });
+      el.classList.add('active');
+      updateActiveFilterCount();
+      renderCards();
+    });
+  });
+
+  // Owned toggle
+  var ownedBtn = document.getElementById('ownedToggleBtn');
+  if (ownedBtn) ownedBtn.addEventListener('click', function() {
+    showOwnedOnly = !showOwnedOnly;
+    ownedBtn.classList.toggle('active', showOwnedOnly);
+    updateActiveFilterCount();
+    renderCards();
+  });
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', runInit);
@@ -2273,6 +2497,179 @@ function formatSongTime(sec) {
   var s = Math.floor(sec % 60);
   return m + ':' + String(s).padStart(2,'0');
 }
+
+// =====================
+// CARD GALLERY
+// =====================
+let allCards = [];
+let cardsLoaded = false;
+let activeCharFilter = 'all';
+let activeRarityFilter = 'all';
+let activeUnitCardFilter = 'all';
+let activeCardTypeFilter = 'all';
+let showOwnedOnly = false;
+let cardFilterPanelOpen = false;
+let ownedCards = new Set(JSON.parse(localStorage.getItem('pjsk_ownedCards') || '[]'));
+
+const CHAR_NAMES_FULL = {
+  1:'Ichika', 2:'Saki', 3:'Honami', 4:'Shiho',
+  5:'Minori', 6:'Haruka', 7:'Airi', 8:'Shizuku',
+  9:'Kohane', 10:'An', 11:'Akito', 12:'Toya',
+  13:'Tsukasa', 14:'Emu', 15:'Nene', 16:'Rui',
+  17:'Kanade', 18:'Mafuyu', 19:'Ena', 20:'Mizuki',
+  21:'Miku', 22:'Rin', 23:'Len', 24:'Luka', 25:'MEIKO', 26:'KAITO'
+};
+const UNIT_FOR_CHAR = {
+  1:'ln',2:'ln',3:'ln',4:'ln',
+  5:'mmj',6:'mmj',7:'mmj',8:'mmj',
+  9:'vbs',10:'vbs',11:'vbs',12:'vbs',
+  13:'wxs',14:'wxs',15:'wxs',16:'wxs',
+  17:'n25',18:'n25',19:'n25',20:'n25',
+  21:'vs',22:'vs',23:'vs',24:'vs',25:'vs',26:'vs'
+};
+const UNIT_COLORS_CARD = {
+  'ln':'linear-gradient(135deg,#22d3ee,#0891b2)',
+  'mmj':'linear-gradient(135deg,#4ade80,#16a34a)',
+  'vbs':'linear-gradient(135deg,#f87171,#c94040)',
+  'wxs':'linear-gradient(135deg,#fbbf24,#d97706)',
+  'n25':'linear-gradient(135deg,#818cf8,#4f46e5)',
+  'vs':'linear-gradient(135deg,#c084fc,#9333ea)'
+};
+const RARITY_STARS = {
+  'rarity_1': '<span class="star-r1">★</span>',
+  'rarity_2': '<span class="star-r2">★★</span>',
+  'rarity_3': '<span class="star-r3">★★★</span>',
+  'rarity_4': '<span class="star-r4">★★★★</span>',
+  'rarity_birthday': '<span class="star-rb">🎂</span>'
+};
+
+function toggleCardFilterPanel() {
+  cardFilterPanelOpen = !cardFilterPanelOpen;
+  var panel = document.getElementById('cardFilterPanel');
+  var btn = document.getElementById('cardFilterBtn');
+  if (panel) panel.style.display = cardFilterPanelOpen ? 'block' : 'none';
+  if (btn) btn.style.borderColor = cardFilterPanelOpen ? 'var(--accent1)' : 'rgba(255,255,255,0.12)';
+}
+
+function updateActiveFilterCount() {
+  var count = 0;
+  if (activeCharFilter !== 'all') count++;
+  if (activeRarityFilter !== 'all') count++;
+  if (activeUnitCardFilter !== 'all') count++;
+  if (activeCardTypeFilter !== 'all') count++;
+  if (showOwnedOnly) count++;
+  var badge = document.getElementById('activeFilterCount');
+  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline' : 'none'; }
+}
+
+async function loadCards() {
+  if (cardsLoaded) return;
+  document.getElementById('cardsGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);font-family:Fredoka,sans-serif;font-weight:600;">Loading cards... 🃏</div>';
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/Sekai-World/sekai-master-db-en-diff/main/cards.json');
+    allCards = await res.json();
+    cardsLoaded = true;
+    buildCharFilters();
+    renderCards();
+  } catch(e) {
+    document.getElementById('cardsGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);font-family:Fredoka,sans-serif;">Could not load cards.</div>';
+  }
+}
+
+function buildCharFilters() {
+  var container = document.getElementById('charFilters');
+  if (!container) return;
+  var chars = [{id:'all', name:'All'}];
+  for (var i = 1; i <= 26; i++) { chars.push({id:i, name:CHAR_NAMES_FULL[i]}); }
+  container.innerHTML = chars.map(function(c) {
+    var initial = c.id === 'all' ? 'All' : c.name.charAt(0);
+    var shortName = c.id === 'all' ? 'All' : (c.name.length > 5 ? c.name.slice(0,4) : c.name);
+    return '<div class="char-chip' + (c.id === 'all' ? ' active' : '') + '" data-char="' + c.id + '">' +
+      '<span class="char-initial" style="font-size:' + (c.id==='all'?'0.7rem':'1.1rem') + ';">' + initial + '</span>' +
+      '<span>' + shortName + '</span></div>';
+  }).join('');
+  container.querySelectorAll('.char-chip').forEach(function(el) {
+    el.addEventListener('click', function() {
+      activeCharFilter = el.getAttribute('data-char');
+      container.querySelectorAll('.char-chip').forEach(function(c){c.classList.remove('active');});
+      el.classList.add('active');
+      updateActiveFilterCount(); renderCards();
+    });
+  });
+}
+
+function getCardType(card) {
+  var t = card.cardSupplyType || '';
+  if (t === 'limited') return 'limited';
+  if (t === 'colorful_festival') return 'colorful_festival';
+  if (t === 'bloom_festival') return 'bloom_festival';
+  return 'permanent';
+}
+
+function renderCards() {
+  var grid = document.getElementById('cardsGrid');
+  var countEl = document.getElementById('cardsCount');
+  if (!grid) return;
+  var filtered = allCards.filter(function(card) {
+    return (activeCharFilter === 'all' || String(card.characterId) === String(activeCharFilter)) &&
+           (activeRarityFilter === 'all' || card.cardRarityType === activeRarityFilter) &&
+           (activeUnitCardFilter === 'all' || UNIT_FOR_CHAR[card.characterId] === activeUnitCardFilter) &&
+           (activeCardTypeFilter === 'all' || getCardType(card) === activeCardTypeFilter) &&
+           (!showOwnedOnly || ownedCards.has(card.id));
+  });
+  if (countEl) {
+    var ownedCount = filtered.filter(function(c){return ownedCards.has(c.id);}).length;
+    countEl.textContent = filtered.length + ' cards · ' + ownedCount + ' owned';
+  }
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);font-family:Fredoka,sans-serif;font-weight:600;">No cards found 🃏</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(function(card) {
+    var isOwned = ownedCards.has(card.id);
+    var unit = UNIT_FOR_CHAR[card.characterId] || 'vs';
+    var gradient = UNIT_COLORS_CARD[unit] || UNIT_COLORS_CARD['vs'];
+    var stars = RARITY_STARS[card.cardRarityType] || '';
+    var charName = CHAR_NAMES_FULL[card.characterId] || '?';
+    var imgUrl = card.assetbundleName ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/character/member/' + card.assetbundleName + '_rip/card_normal.webp' : null;
+    var cardType = getCardType(card);
+    var typeBadge = cardType === 'limited' ? '<span style="position:absolute;top:3px;left:3px;background:rgba(251,191,36,0.92);color:#000;border-radius:4px;font-size:0.52rem;font-weight:700;padding:1px 4px;font-family:Fredoka,sans-serif;">LTD</span>' :
+                    cardType === 'colorful_festival' ? '<span style="position:absolute;top:3px;left:3px;background:rgba(244,114,182,0.92);color:#fff;border-radius:4px;font-size:0.52rem;font-weight:700;padding:1px 4px;font-family:Fredoka,sans-serif;">CF</span>' :
+                    cardType === 'bloom_festival' ? '<span style="position:absolute;top:3px;left:3px;background:rgba(74,222,128,0.92);color:#000;border-radius:4px;font-size:0.52rem;font-weight:700;padding:1px 4px;font-family:Fredoka,sans-serif;">BF</span>' : '';
+    return '<div class="card-item' + (isOwned ? ' owned' : '') + '" data-card-id="' + card.id + '" onclick="toggleCardOwned(' + card.id + ')">' +
+      '<div class="card-img-wrap" style="background:' + gradient + ';">' +
+        (imgUrl ? '<img class="card-img" src="' + imgUrl + '" loading="lazy" onerror="this.remove()">' : '') +
+        '<div class="card-no-img" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
+          '<div style="font-size:1.5rem;font-weight:700;color:white;text-shadow:0 1px 4px rgba(0,0,0,0.4);">' + charName.charAt(0) + '</div>' +
+          '<div style="font-family:Fredoka,sans-serif;font-size:0.6rem;color:rgba(255,255,255,0.85);font-weight:700;">' + charName + '</div>' +
+        '</div>' + typeBadge +
+      '</div>' +
+      '<div class="card-footer">' +
+        '<div class="card-char-name">' + (card.prefix || charName) + '</div>' +
+        '<div class="card-rarity">' + stars + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function toggleCardOwned(cardId) {
+  ownedCards.has(cardId) ? ownedCards.delete(cardId) : ownedCards.add(cardId);
+  localStorage.setItem('pjsk_ownedCards', JSON.stringify(Array.from(ownedCards)));
+  var el = document.querySelector('[data-card-id="' + cardId + '"]');
+  if (el) el.classList.toggle('owned', ownedCards.has(cardId));
+  var countEl = document.getElementById('cardsCount');
+  if (countEl && cardsLoaded) {
+    var filtered = allCards.filter(function(card) {
+      return (activeCharFilter === 'all' || String(card.characterId) === String(activeCharFilter)) &&
+             (activeRarityFilter === 'all' || card.cardRarityType === activeRarityFilter) &&
+             (activeUnitCardFilter === 'all' || UNIT_FOR_CHAR[card.characterId] === activeUnitCardFilter) &&
+             (activeCardTypeFilter === 'all' || getCardType(card) === activeCardTypeFilter) &&
+             (!showOwnedOnly || ownedCards.has(card.id));
+    });
+    var ownedCount = filtered.filter(function(c){return ownedCards.has(c.id);}).length;
+    countEl.textContent = filtered.length + ' cards · ' + ownedCount + ' owned';
+  }
+}
+
 </script>
 
 <!-- SONG LIST PAGE -->
@@ -2321,6 +2718,72 @@ function formatSongTime(sec) {
     <div class="modal-grid" id="modalGrid"></div>
     <div class="modal-diffs" id="modalDiffs"></div>
     <button class="modal-close" onclick="closeSongModal()">Close</button>
+  </div>
+</div>
+
+
+<!-- CARD GALLERY PAGE -->
+<div class="page" id="page-cards" style="display:none;">
+  <div class="wrapper">
+    <div style="height:3.5rem;"></div>
+    <div style="font-family:'Fredoka',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent1);letter-spacing:0.08em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;">
+      🃏 Card Gallery
+      <span style="flex:1;height:1px;background:rgba(255,255,255,0.08);display:block;"></span>
+    </div>
+
+    <!-- Top bar: filter button + owned toggle -->
+    <div style="display:flex;gap:0.6rem;margin-bottom:0.8rem;align-items:center;">
+      <button id="cardFilterBtn" style="display:flex;align-items:center;gap:0.4rem;padding:0.5rem 1rem;border-radius:12px;border:1.5px solid rgba(255,255,255,0.12);background:var(--card);color:var(--text);font-family:'Fredoka',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;flex:1;">
+        🔽 Filters <span id="activeFilterCount" style="background:var(--accent1);color:white;border-radius:999px;padding:0.1rem 0.5rem;font-size:0.72rem;display:none;">0</span>
+      </button>
+      <button class="owned-toggle-btn" id="ownedToggleBtn">Owned only</button>
+    </div>
+
+    <!-- Filter Dropdown Panel -->
+    <div id="cardFilterPanel" style="display:none;background:var(--card);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:1rem;margin-bottom:0.8rem;">
+
+      <!-- Character filter -->
+      <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Character</div>
+      <div class="char-filter-grid" id="charFilters" style="margin-bottom:0.8rem;"></div>
+
+      <!-- Unit filter -->
+      <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Unit</div>
+      <div class="rarity-filter-row" id="unitCardFilters" style="margin-bottom:0.8rem;">
+        <div class="rarity-chip active" data-unit-card="all">All</div>
+        <div class="rarity-chip" data-unit-card="ln">🎸 L/N</div>
+        <div class="rarity-chip" data-unit-card="mmj">🌸 MMJ</div>
+        <div class="rarity-chip" data-unit-card="vbs">🎤 VBS</div>
+        <div class="rarity-chip" data-unit-card="wxs">🎪 WxS</div>
+        <div class="rarity-chip" data-unit-card="n25">🌙 25-ji</div>
+        <div class="rarity-chip" data-unit-card="vs">🎵 VS</div>
+      </div>
+
+      <!-- Rarity filter -->
+      <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Rarity</div>
+      <div class="rarity-filter-row" id="rarityFilters" style="margin-bottom:0.8rem;">
+        <div class="rarity-chip active" data-rarity="all">All</div>
+        <div class="rarity-chip r1" data-rarity="rarity_1">★</div>
+        <div class="rarity-chip r2" data-rarity="rarity_2">★★</div>
+        <div class="rarity-chip r3" data-rarity="rarity_3">★★★</div>
+        <div class="rarity-chip r4" data-rarity="rarity_4">★★★★</div>
+        <div class="rarity-chip rb" data-rarity="rarity_birthday">🎂 Birthday</div>
+      </div>
+
+      <!-- Card type filter -->
+      <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Card Type</div>
+      <div class="rarity-filter-row" id="cardTypeFilters" style="margin-bottom:0;">
+        <div class="rarity-chip active" data-card-type="all">All</div>
+        <div class="rarity-chip" data-card-type="limited" style="border-color:rgba(251,191,36,0.3);color:#fbbf24;">⏰ Limited</div>
+        <div class="rarity-chip" data-card-type="colorful_festival" style="border-color:rgba(244,114,182,0.3);color:#f472b6;">🌈 Colorful Fest</div>
+        <div class="rarity-chip" data-card-type="bloom_festival" style="border-color:rgba(74,222,128,0.3);color:#4ade80;">🌸 Bloom Fest</div>
+        <div class="rarity-chip" data-card-type="permanent">♾️ Permanent</div>
+      </div>
+    </div>
+
+    <div class="cards-count" id="cardsCount"></div>
+    <div class="cards-grid" id="cardsGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);font-family:'Fredoka',sans-serif;font-weight:600;">Loading cards... 🃏</div>
+    </div>
   </div>
 </div>
 
