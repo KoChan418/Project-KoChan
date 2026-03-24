@@ -1249,6 +1249,81 @@
     padding: 0.3rem;
   }
 
+
+  /* ===== LOGIN SCREEN ===== */
+  #page-login {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+  }
+  .login-box {
+    background: var(--card);
+    border: 1px solid rgba(232,82,58,0.2);
+    border-radius: 24px;
+    padding: 2rem 1.8rem;
+    width: 100%; max-width: 360px;
+    box-shadow: 0 0 40px rgba(201,64,64,0.12);
+  }
+  .login-logo { font-size: 2.5rem; text-align:center; margin-bottom:0.3rem; }
+  .login-title {
+    font-family: 'Fredoka', sans-serif; font-weight:700;
+    font-size: 1.5rem; text-align:center;
+    background: linear-gradient(135deg, var(--accent1), var(--accent2), var(--accent3));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    margin-bottom: 0.2rem;
+  }
+  .login-sub { text-align:center; color:var(--muted); font-size:0.82rem; font-weight:600; margin-bottom:1.6rem; }
+  .login-tabs { display:flex; gap:0.5rem; margin-bottom:1.4rem; }
+  .login-tab {
+    flex:1; padding:0.5rem; border-radius:10px; border:1.5px solid rgba(255,255,255,0.1);
+    background:transparent; color:var(--muted); font-family:'Fredoka',sans-serif;
+    font-weight:700; font-size:0.9rem; cursor:pointer; transition:all .2s;
+  }
+  .login-tab.active {
+    background: rgba(201,64,64,0.15); border-color:var(--accent1); color:var(--accent1);
+  }
+  .login-field { margin-bottom: 1rem; }
+  .login-field label { font-size:0.75rem; font-weight:700; color:var(--accent1); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.35rem; display:block; }
+  .login-field input {
+    width:100%; background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.1);
+    border-radius:12px; padding:0.65rem 0.9rem; color:var(--text);
+    font-family:'Fredoka',sans-serif; font-size:0.95rem; font-weight:500;
+    outline:none; transition:border-color .2s;
+  }
+  .login-field input:focus { border-color:var(--accent1); }
+  .login-btn {
+    width:100%; padding:0.75rem; border-radius:14px; border:none;
+    background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    color:white; font-family:'Fredoka',sans-serif; font-weight:700;
+    font-size:1rem; cursor:pointer; margin-top:0.5rem;
+    box-shadow:0 4px 20px rgba(201,64,64,0.35); transition:opacity .2s;
+  }
+  .login-btn:hover { opacity:0.88; }
+  .login-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .login-error { color:#f87171; font-size:0.82rem; font-weight:600; text-align:center; margin-top:0.6rem; min-height:1.2rem; }
+  .login-success { color:#4ade80; font-size:0.82rem; font-weight:600; text-align:center; margin-top:0.6rem; }
+  .user-badge {
+    display:flex; align-items:center; gap:0.5rem;
+    background:rgba(201,64,64,0.1); border:1px solid rgba(201,64,64,0.2);
+    border-radius:999px; padding:0.3rem 0.8rem 0.3rem 0.5rem;
+    font-family:'Fredoka',sans-serif; font-weight:700; font-size:0.82rem; color:var(--accent1);
+    cursor:pointer;
+  }
+  .user-badge:hover { background:rgba(201,64,64,0.18); }
+
+
+  .back-btn {
+    display: none;
+    align-items: center; gap: 0.4rem;
+    background: var(--card); border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 0.45rem 0.9rem;
+    color: var(--muted); font-family: 'Fredoka', sans-serif;
+    font-weight: 700; font-size: 0.88rem; cursor: pointer;
+    margin-bottom: 0.8rem; transition: all .18s;
+  }
+  .back-btn:hover { border-color: var(--accent1); color: var(--accent1); }
+
 </style>
 </head>
 <body>
@@ -1258,6 +1333,9 @@
 <!-- Hamburger -->
 <button class="hamburger" id="hamburger" aria-label="Menu">
   <span></span><span></span><span></span>
+</button>
+<button class="user-badge" id="userBadge" onclick="showLoginPage()" style="position:fixed;top:1rem;right:1rem;z-index:200;display:flex;">
+  👤 <span id="userBadgeName">Guest</span>
 </button>
 
 <!-- Overlay -->
@@ -1358,6 +1436,9 @@
 
 <!-- TRACKER PAGE -->
 <div class="page" id="page-tracker-page" style="display:none;">
+  <div class="wrapper" style="padding-top:1rem;">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+  </div>
 <div class="wrapper">
   <div style="height:3.5rem;"></div>
   <header>
@@ -1876,7 +1957,15 @@ function closeSidebar() {
   document.getElementById('hamburger').classList.remove('open');
 }
 
+var pageHistory = [];
+var currentPage = 'home';
+
 function navigateTo(pageId) {
+  if (pageId !== currentPage) {
+    pageHistory.push(currentPage);
+    if (pageHistory.length > 20) pageHistory.shift();
+  }
+  currentPage = pageId;
   // Hide all pages using inline styles - most reliable cross-browser
   document.querySelectorAll('.page').forEach(function(p) {
     p.style.display = 'none';
@@ -1892,10 +1981,34 @@ function navigateTo(pageId) {
   document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
   var navItem = document.getElementById('nav-' + pageId);
   if (navItem) navItem.classList.add('active');
+  // Update back buttons
+  var hasPrev = pageHistory.length > 0;
+  document.querySelectorAll('.back-btn').forEach(function(b) {
+    b.style.display = hasPrev ? 'flex' : 'none';
+  });
   closeSidebar();
   // Load songs on demand
   if (pageId === 'songs' && !songsLoaded) loadSongs();
   if (pageId === 'cards' && !cardsLoaded) loadCards();
+}
+
+function goBack() {
+  if (pageHistory.length === 0) return;
+  var prev = pageHistory.pop();
+  currentPage = prev;
+  document.querySelectorAll('.page').forEach(function(p) {
+    p.style.display = 'none'; p.classList.remove('active');
+  });
+  var target = document.getElementById('page-' + prev);
+  if (target) { target.style.display = 'block'; target.classList.add('active'); }
+  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+  var navItem = document.getElementById('nav-' + prev);
+  if (navItem) navItem.classList.add('active');
+  var hasPrev = pageHistory.length > 0;
+  document.querySelectorAll('.back-btn').forEach(function(b) {
+    b.style.display = hasPrev ? 'flex' : 'none';
+  });
+  closeSidebar();
 }
 
 let currentTheme = 'akito';
@@ -2016,7 +2129,13 @@ async function loadSongs() {
 
 
     songsLoaded = true;
-
+    var sdb = document.getElementById('songDebugBox');
+    if (sdb && allSongs.length > 0) {
+      var s = allSongs[0];
+      var jacketNum0 = String(s.id).padStart(3,'0');
+      var imgUrl = 'https://www.sekaipedia.org/wiki/Special:FilePath/Jacket' + jacketNum0 + '.png';
+      sdb.textContent = 'Total songs: ' + allSongs.length + '\nFirst song: id=' + s.id + ', ab=' + s.assetbundleName + '\nImg URL: ' + imgUrl;
+    }
     renderSongs();
   } catch(e) {
     console.error('Song load error:', e);
@@ -2158,8 +2277,9 @@ function renderSongs() {
       'inst': 'linear-gradient(135deg,#94a3b8,#475569)'
     };
     var coverGradient = unitColors[displayUnit] || unitColors['vs'];
-    var coverUrl = ab ? 'https://storage.sekai.best/sekai-en-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
-    var coverFallback1 = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+    var jacketNum = String(song.id).padStart(3, '0');
+    var coverUrl = 'https://www.sekaipedia.org/wiki/Special:FilePath/Jacket' + jacketNum + '.png';
+    var coverFallback1 = ab ? 'https://storage.sekai.best/sekai-jp-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
     var coverFallback2 = '';
     var emoji = UNIT_EMOJI[unit] || '🎶';
     // If VS song with exactly one sekai unit, show that as the main badge instead
@@ -2170,7 +2290,7 @@ function renderSongs() {
     return `
       <div class="song-card" style="display:flex;gap:0.8rem;align-items:center;cursor:pointer;" onclick="openSongModal(${song.id})">
         <div style="width:56px;height:56px;border-radius:10px;flex-shrink:0;background:${coverGradient};overflow:hidden;display:flex;align-items:center;justify-content:center;position:relative;">
-          ${coverUrl ? `<img src="${coverUrl}" alt="cover" style="width:56px;height:56px;object-fit:cover;position:absolute;inset:0;" 
+          ${coverUrl ? `<img referrerpolicy="no-referrer" src="${coverUrl}" alt="cover" style="width:56px;height:56px;object-fit:cover;position:absolute;inset:0;" 
             data-fb1="${coverFallback1}" data-fb2="${coverFallback2}"
             onerror="var fb=this.getAttribute('data-fb1');if(fb&&this.src!==fb){this.src=fb;this.setAttribute('data-fb1','');}else{var fb2=this.getAttribute('data-fb2');if(fb2&&this.src!==fb2){this.src=fb2;}else{this.remove();}}">`  : '<span style="font-size:1.4rem;">🎵</span>'}
         </div>
@@ -2188,7 +2308,162 @@ function renderSongs() {
   }).join('');
 }
 
+
+// =====================================================
+// LOGIN / ACCOUNT SYSTEM
+// Uses window.storage (Artifact persistent storage)
+// =====================================================
+var currentUser = null;
+
+function hashPassword(pass) {
+  // Simple deterministic hash for localStorage-based auth
+  var h = 0;
+  for (var i = 0; i < pass.length; i++) {
+    h = Math.imul(31, h) + pass.charCodeAt(i) | 0;
+  }
+  return 'h' + Math.abs(h).toString(36) + pass.length;
+}
+
+function switchLoginTab(tab) {
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('loginError').textContent = '';
+  document.getElementById('registerError').textContent = '';
+}
+
+async function doLogin() {
+  var user = (document.getElementById('loginUser').value || '').trim().toLowerCase();
+  var pass = document.getElementById('loginPass').value || '';
+  var errEl = document.getElementById('loginError');
+  if (!user || !pass) { errEl.textContent = 'Please fill in all fields.'; return; }
+  document.getElementById('loginBtn').disabled = true;
+  errEl.textContent = '';
+  try {
+    var stored = null;
+    try { stored = await window.storage.get('user:' + user, true); } catch(e) {}
+    if (!stored) { errEl.textContent = 'Account not found.'; return; }
+    var data = JSON.parse(stored.value);
+    if (data.pw !== hashPassword(pass)) { errEl.textContent = 'Wrong password.'; return; }
+    await loginSuccess(user, data);
+  } catch(e) {
+    errEl.textContent = 'Error: ' + e.message;
+  } finally {
+    document.getElementById('loginBtn').disabled = false;
+  }
+}
+
+async function doRegister() {
+  var user = (document.getElementById('regUser').value || '').trim().toLowerCase();
+  var pass = document.getElementById('regPass').value || '';
+  var pass2 = document.getElementById('regPass2').value || '';
+  var errEl = document.getElementById('registerError');
+  if (!user || !pass) { errEl.textContent = 'Please fill in all fields.'; return; }
+  if (user.length < 3) { errEl.textContent = 'Username must be at least 3 characters.'; return; }
+  if (pass.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (pass !== pass2) { errEl.textContent = 'Passwords do not match.'; return; }
+  if (!/^[a-z0-9_]+$/.test(user)) { errEl.textContent = 'Username: only letters, numbers, underscore.'; return; }
+  document.getElementById('registerBtn').disabled = true;
+  errEl.textContent = '';
+  try {
+    var existing = null;
+    try { existing = await window.storage.get('user:' + user, true); } catch(e) {}
+    if (existing) { errEl.textContent = 'Username already taken.'; return; }
+    var userData = { pw: hashPassword(pass), owned: [], energy: null, created: Date.now() };
+    await window.storage.set('user:' + user, JSON.stringify(userData), true);
+    await loginSuccess(user, userData);
+  } catch(e) {
+    errEl.textContent = 'Error: ' + e.message;
+  } finally {
+    document.getElementById('registerBtn').disabled = false;
+  }
+}
+
+async function loginSuccess(username, data) {
+  currentUser = username;
+  localStorage.setItem('pjsk_user', username);
+  // Load owned cards from account
+  if (data.owned && data.owned.length > 0) {
+    ownedCards = new Set(data.owned);
+    localStorage.setItem('pjsk_ownedCards', JSON.stringify(data.owned));
+  }
+  // Load energy state from account
+  if (data.energy) {
+    try { localStorage.setItem('pjsk_energy', JSON.stringify(data.energy)); } catch(e) {}
+  }
+  document.getElementById('page-login').style.display = 'none';
+  var badge = document.getElementById('userBadge');
+  var badgeName = document.getElementById('userBadgeName');
+  if (badge) badge.style.display = 'flex';
+  if (badgeName) badgeName.textContent = '✓ ' + username;
+}
+
+function skipLogin() {
+  currentUser = null;
+  localStorage.removeItem('pjsk_user');
+  document.getElementById('page-login').style.display = 'none';
+  var badge = document.getElementById('userBadge');
+  var badgeName = document.getElementById('userBadgeName');
+  if (badge) badge.style.display = 'flex';
+  if (badgeName) badgeName.textContent = 'Guest';
+}
+
+function showLoginPage() {
+  if (currentUser) {
+    if (confirm('Signed in as ' + currentUser + '.\n\nSign out?')) {
+      currentUser = null;
+      localStorage.removeItem('pjsk_user');
+      var badgeName = document.getElementById('userBadgeName');
+      if (badgeName) badgeName.textContent = 'Guest';
+    }
+  } else {
+    document.getElementById('page-login').style.display = 'flex';
+  }
+}
+
+async function saveAccountData() {
+  if (!currentUser) return;
+  try {
+    var existing = null;
+    try { existing = await window.storage.get('user:' + currentUser, true); } catch(e) {}
+    var data = existing ? JSON.parse(existing.value) : { pw: '', created: Date.now() };
+    data.owned = Array.from(ownedCards);
+    // Save energy state
+    var energyData = localStorage.getItem('pjsk_energy');
+    if (energyData) data.energy = JSON.parse(energyData);
+    await window.storage.set('user:' + currentUser, JSON.stringify(data), true);
+  } catch(e) { console.warn('Save failed:', e); }
+}
+
+async function initLogin() {
+  var savedUser = localStorage.getItem('pjsk_user');
+  if (savedUser) {
+    try {
+      var stored = await window.storage.get('user:' + savedUser, true);
+      if (stored) {
+        var data = JSON.parse(stored.value);
+        await loginSuccess(savedUser, data);
+        return;
+      }
+    } catch(e) {}
+  }
+  // Show login screen
+  document.getElementById('page-login').style.display = 'flex';
+}
+
+// Auto-save account data when owned cards change
+var _origToggleCardOwned = null;
+function patchToggleForSync() {
+  var origFn = toggleCardOwned;
+  window.toggleCardOwned = function(cardId) {
+    origFn(cardId);
+    saveAccountData();
+  };
+}
+
 // Single init that runs after all functions are defined
+
 function runInit() {
   initImages();
   // Attach all event listeners
@@ -2263,6 +2538,17 @@ function runInit() {
     });
   });
 
+  // Attribute filters
+  document.querySelectorAll('#attrFilters .rarity-chip').forEach(function(el) {
+    el.addEventListener('click', function() {
+      activeAttrFilter = el.getAttribute('data-attr');
+      document.querySelectorAll('#attrFilters .rarity-chip').forEach(function(c) { c.classList.remove('active'); });
+      el.classList.add('active');
+      updateActiveFilterCount();
+      renderCards();
+    });
+  });
+
   // Owned toggle
   var ownedBtn = document.getElementById('ownedToggleBtn');
   if (ownedBtn) ownedBtn.addEventListener('click', function() {
@@ -2273,9 +2559,9 @@ function runInit() {
   });
 }
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', runInit);
+  document.addEventListener('DOMContentLoaded', function() { runInit(); patchToggleForSync(); initLogin(); });
 } else {
-  runInit();
+  runInit(); patchToggleForSync(); initLogin();
 }
 // Event listeners merged into runInit()
 
@@ -2399,19 +2685,25 @@ function openSongModal(musicId) {
 
   var unit = getUnitForSong(song);
   var ab = song.assetbundleName || '';
-  var coverUrl = ab ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
+  var jacketNum = String(song.id).padStart(3, '0');
+  var modalCoverUrls = [
+    'https://www.sekaipedia.org/wiki/Special:FilePath/Jacket' + jacketNum + '.png',
+    ab ? 'https://storage.sekai.best/sekai-jp-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : null,
+  ].filter(Boolean);
+  var modalCoverIdx = 0;
 
   // Set cover
   var cover = document.getElementById('modalCover');
-  if (coverUrl) {
-    cover.src = coverUrl;
-    cover.style.display = 'block';
-    cover.onerror = function() {
-      cover.src = ab ? 'https://minio.dnaroma.eu/sekai-assets/music/jacket/' + ab + '_rip/' + ab + '.webp' : '';
-      cover.onerror = function() { this.style.display = 'none'; };
-      cover.onerror = function() { cover.style.display = 'none'; };
-    };
-  } else { cover.style.display = 'none'; }
+  cover.style.display = 'block';
+  cover.src = modalCoverUrls[0];
+  cover.onerror = function() {
+    modalCoverIdx++;
+    if (modalCoverIdx < modalCoverUrls.length) {
+      cover.src = modalCoverUrls[modalCoverIdx];
+    } else {
+      cover.style.display = 'none';
+    }
+  };
 
   document.getElementById('modalTitle').textContent = song.title || 'Unknown';
   document.getElementById('modalArtist').textContent =
@@ -2507,6 +2799,7 @@ let activeCharFilter = 'all';
 let activeRarityFilter = 'all';
 let activeUnitCardFilter = 'all';
 let activeCardTypeFilter = 'all';
+let activeAttrFilter = 'all';
 let showOwnedOnly = false;
 let cardFilterPanelOpen = false;
 let ownedCards = new Set(JSON.parse(localStorage.getItem('pjsk_ownedCards') || '[]'));
@@ -2557,6 +2850,7 @@ function updateActiveFilterCount() {
   if (activeRarityFilter !== 'all') count++;
   if (activeUnitCardFilter !== 'all') count++;
   if (activeCardTypeFilter !== 'all') count++;
+  if (activeAttrFilter !== 'all') count++;
   if (showOwnedOnly) count++;
   var badge = document.getElementById('activeFilterCount');
   if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'inline' : 'none'; }
@@ -2601,8 +2895,9 @@ function buildCharFilters() {
 function getCardType(card) {
   var t = card.cardSupplyType || '';
   if (t === 'limited') return 'limited';
-  if (t === 'colorful_festival') return 'colorful_festival';
-  if (t === 'bloom_festival') return 'bloom_festival';
+  if (t === 'colorful_festival' || t === 'colorfulFestival') return 'colorful_festival';
+  if (t === 'bloom_festival' || t === 'bloomFestival') return 'bloom_festival';
+  // 'normal', 'event', 'permanent', '' all count as permanent
   return 'permanent';
 }
 
@@ -2615,6 +2910,7 @@ function renderCards() {
            (activeRarityFilter === 'all' || card.cardRarityType === activeRarityFilter) &&
            (activeUnitCardFilter === 'all' || UNIT_FOR_CHAR[card.characterId] === activeUnitCardFilter) &&
            (activeCardTypeFilter === 'all' || getCardType(card) === activeCardTypeFilter) &&
+           (activeAttrFilter === 'all' || (card.attr || card.cardAttr || '').toLowerCase() === activeAttrFilter) &&
            (!showOwnedOnly || ownedCards.has(card.id));
   });
   if (countEl) {
@@ -2631,18 +2927,25 @@ function renderCards() {
     var gradient = UNIT_COLORS_CARD[unit] || UNIT_COLORS_CARD['vs'];
     var stars = RARITY_STARS[card.cardRarityType] || '';
     var charName = CHAR_NAMES_FULL[card.characterId] || '?';
-    var imgUrl = card.assetbundleName ? 'https://sekai-res.dnaroma.eu/file/sekai-assets/character/member/' + card.assetbundleName + '_rip/card_normal.webp' : null;
+    var cardNumStr = String(card.id).padStart(6, '0');
+    var imgUrl = 'https://www.sekaipedia.org/wiki/Special:FilePath/Card_normal_' + cardNumStr + '.png';
+    var imgUrlFb = card.assetbundleName ? 'https://storage.sekai.best/sekai-jp-assets/character/member/' + card.assetbundleName + '_rip/card_normal.webp' : null;
     var cardType = getCardType(card);
+var attrVal = (card.attr || card.cardAttr || '').toLowerCase();
+    var attrColors = {cool:'#60a5fa',cute:'#f472b6',happy:'#facc15',mysterious:'#a78bfa',pure:'#34d399'};
+    var attrEmojis = {cool:'❄️',cute:'🌸',happy:'☀️',mysterious:'🌙',pure:'🍃'};
+    var attrBadge = attrVal && attrColors[attrVal] ? '<span style="position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,0.6);border-radius:4px;font-size:0.6rem;padding:1px 3px;color:' + attrColors[attrVal] + ';font-weight:700;">' + (attrEmojis[attrVal]||'') + ' ' + attrVal.charAt(0).toUpperCase()+attrVal.slice(1) + '</span>' : '';
     var typeBadge = cardType === 'limited' ? '<span style="position:absolute;top:3px;left:3px;background:rgba(251,191,36,0.92);color:#000;border-radius:4px;font-size:0.52rem;font-weight:700;padding:1px 4px;font-family:Fredoka,sans-serif;">LTD</span>' :
                     cardType === 'colorful_festival' ? '<span style="position:absolute;top:3px;left:3px;background:rgba(244,114,182,0.92);color:#fff;border-radius:4px;font-size:0.52rem;font-weight:700;padding:1px 4px;font-family:Fredoka,sans-serif;">CF</span>' :
                     cardType === 'bloom_festival' ? '<span style="position:absolute;top:3px;left:3px;background:rgba(74,222,128,0.92);color:#000;border-radius:4px;font-size:0.52rem;font-weight:700;padding:1px 4px;font-family:Fredoka,sans-serif;">BF</span>' : '';
+    var imgTag = imgUrl ? '<img referrerpolicy="no-referrer" class="card-img" src="' + imgUrl + '" loading="lazy" data-fb="' + imgUrlFb + '" onerror="var f=this.getAttribute(\'data-fb\');if(f&&this.src!==f){this.removeAttribute(\'data-fb\');this.src=f;}else{this.remove();}">' : '';
     return '<div class="card-item' + (isOwned ? ' owned' : '') + '" data-card-id="' + card.id + '" onclick="toggleCardOwned(' + card.id + ')">' +
       '<div class="card-img-wrap" style="background:' + gradient + ';">' +
-        (imgUrl ? '<img class="card-img" src="' + imgUrl + '" loading="lazy" onerror="this.remove()">' : '') +
+        imgTag +
         '<div class="card-no-img" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
           '<div style="font-size:1.5rem;font-weight:700;color:white;text-shadow:0 1px 4px rgba(0,0,0,0.4);">' + charName.charAt(0) + '</div>' +
           '<div style="font-family:Fredoka,sans-serif;font-size:0.6rem;color:rgba(255,255,255,0.85);font-weight:700;">' + charName + '</div>' +
-        '</div>' + typeBadge +
+        '</div>' + typeBadge + attrBadge +
       '</div>' +
       '<div class="card-footer">' +
         '<div class="card-char-name">' + (card.prefix || charName) + '</div>' +
@@ -2676,6 +2979,7 @@ function toggleCardOwned(cardId) {
 <div class="page" id="page-songs" style="display:none;">
   <div class="wrapper">
     <div style="height:3.5rem;"></div>
+    <button class="back-btn" onclick="goBack()">← Back</button>
     <div style="margin-bottom:0.5rem;">
       <div style="font-family:'Fredoka',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent1);letter-spacing:0.08em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;">
         🎵 Song List
@@ -2701,6 +3005,10 @@ function toggleCardOwned(cardId) {
       <div class="filter-chip" data-unit="other">🌐 Other</div>
     </div>
     <div class="songs-count" id="songsCount"></div>
+    <details style="margin-bottom:0.6rem;">
+      <summary style="font-family:Fredoka,sans-serif;font-size:0.78rem;color:var(--muted);cursor:pointer;font-weight:700;">🐛 Debug Info (tap to expand, screenshot &amp; send)</summary>
+      <pre id="songDebugBox" style="font-size:0.65rem;color:var(--muted);background:rgba(0,0,0,0.3);border-radius:10px;padding:0.8rem;margin-top:0.4rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-family:monospace;">Waiting for songs...</pre>
+    </details>
     <div class="song-list" id="songList">
       <div class="loading-songs">Tap to load songs ⚡</div>
     </div>
@@ -2725,6 +3033,8 @@ function toggleCardOwned(cardId) {
 <!-- CARD GALLERY PAGE -->
 <div class="page" id="page-cards" style="display:none;">
   <div class="wrapper">
+    <div style="height:3.5rem;"></div>
+    <button class="back-btn" onclick="goBack()">← Back</button>
     <div style="height:3.5rem;"></div>
     <div style="font-family:'Fredoka',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent1);letter-spacing:0.08em;text-transform:uppercase;display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;">
       🃏 Card Gallery
@@ -2771,18 +3081,63 @@ function toggleCardOwned(cardId) {
 
       <!-- Card type filter -->
       <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Card Type</div>
-      <div class="rarity-filter-row" id="cardTypeFilters" style="margin-bottom:0;">
+      <div class="rarity-filter-row" id="cardTypeFilters" style="margin-bottom:0.8rem;">
         <div class="rarity-chip active" data-card-type="all">All</div>
         <div class="rarity-chip" data-card-type="limited" style="border-color:rgba(251,191,36,0.3);color:#fbbf24;">⏰ Limited</div>
         <div class="rarity-chip" data-card-type="colorful_festival" style="border-color:rgba(244,114,182,0.3);color:#f472b6;">🌈 Colorful Fest</div>
         <div class="rarity-chip" data-card-type="bloom_festival" style="border-color:rgba(74,222,128,0.3);color:#4ade80;">🌸 Bloom Fest</div>
         <div class="rarity-chip" data-card-type="permanent">♾️ Permanent</div>
       </div>
+
+      <!-- Attribute filter -->
+      <div style="font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;">Attribute</div>
+      <div class="rarity-filter-row" id="attrFilters" style="margin-bottom:0;">
+        <div class="rarity-chip active" data-attr="all">All</div>
+        <div class="rarity-chip" data-attr="cool" style="border-color:rgba(96,165,250,0.3);color:#60a5fa;">❄️ Cool</div>
+        <div class="rarity-chip" data-attr="cute" style="border-color:rgba(244,114,182,0.3);color:#f472b6;">🌸 Cute</div>
+        <div class="rarity-chip" data-attr="happy" style="border-color:rgba(250,204,21,0.3);color:#facc15;">☀️ Happy</div>
+        <div class="rarity-chip" data-attr="mysterious" style="border-color:rgba(167,139,250,0.3);color:#a78bfa;">🌙 Mysterious</div>
+        <div class="rarity-chip" data-attr="pure" style="border-color:rgba(52,211,153,0.3);color:#34d399;">🍃 Pure</div>
+      </div>
     </div>
 
     <div class="cards-count" id="cardsCount"></div>
+    <details style="margin-bottom:0.6rem;">
+      <summary style="font-family:Fredoka,sans-serif;font-size:0.78rem;color:var(--muted);cursor:pointer;font-weight:700;">🐛 Debug Info (tap to expand, screenshot &amp; send)</summary>
+      <pre id="debugBox" style="font-size:0.65rem;color:var(--muted);background:rgba(0,0,0,0.3);border-radius:10px;padding:0.8rem;margin-top:0.4rem;overflow-x:auto;white-space:pre-wrap;word-break:break-all;font-family:monospace;">Loading...</pre>
+    </details>
     <div class="cards-grid" id="cardsGrid">
       <div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--muted);font-family:'Fredoka',sans-serif;font-weight:600;">Loading cards... 🃏</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- LOGIN PAGE -->
+<div id="page-login">
+  <div class="login-box">
+    <div class="login-logo">⚡</div>
+    <div class="login-title">PJSK Tracker</div>
+    <div class="login-sub">Sign in to sync your progress across devices</div>
+    <div class="login-tabs">
+      <button class="login-tab active" id="tabLogin" onclick="switchLoginTab('login')">Sign In</button>
+      <button class="login-tab" id="tabRegister" onclick="switchLoginTab('register')">Register</button>
+    </div>
+    <div id="loginForm">
+      <div class="login-field"><label>Username</label><input type="text" id="loginUser" placeholder="your username" autocomplete="username"></div>
+      <div class="login-field"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In</button>
+      <div class="login-error" id="loginError"></div>
+      <div style="text-align:center;margin-top:1rem;">
+        <button onclick="skipLogin()" style="background:none;border:none;color:var(--muted);font-family:'Fredoka',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;text-decoration:underline;">Continue without account</button>
+      </div>
+    </div>
+    <div id="registerForm" style="display:none;">
+      <div class="login-field"><label>Username</label><input type="text" id="regUser" placeholder="choose a username" autocomplete="username"></div>
+      <div class="login-field"><label>Password</label><input type="password" id="regPass" placeholder="min. 6 characters" autocomplete="new-password"></div>
+      <div class="login-field"><label>Confirm Password</label><input type="password" id="regPass2" placeholder="repeat password" autocomplete="new-password"></div>
+      <button class="login-btn" id="registerBtn" onclick="doRegister()">Create Account</button>
+      <div class="login-error" id="registerError"></div>
     </div>
   </div>
 </div>
